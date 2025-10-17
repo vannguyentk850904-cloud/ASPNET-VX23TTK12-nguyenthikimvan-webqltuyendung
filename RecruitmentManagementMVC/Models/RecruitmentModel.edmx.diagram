@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<edmx:Edmx Version="3.0" xmlns:edmx="http://schemas.microsoft.com/ado/2009/11/edmx">
+ <!-- EF Designer content (DO NOT EDIT MANUALLY BELOW HERE) -->
+  <edmx:Designer xmlns="http://schemas.microsoft.com/ado/2009/11/edmx">
+    <!-- Diagram content (shape and connector positions) -->
+    <edmx:Diagrams>
+      <Diagram DiagramId="4b76939a94894e629650f0f4c609c952" Name="Diagram1">
+        <EntityTypeShape EntityType="RecruitmentDbModel.Application" Width="1.5" PointX="5.25" PointY="4.5" IsExpanded="true" />
+        <EntityTypeShape EntityType="RecruitmentDbModel.JobPost" Width="1.5" PointX="3" PointY="5.75" IsExpanded="true" />
+        <EntityTypeShape EntityType="RecruitmentDbModel.User" Width="1.5" PointX="0.75" PointY="2.75" IsExpanded="true" />
+        <AssociationConnector Association="RecruitmentDbModel.FK__Applicati__Candi__5441852A" ManuallyRouted="false" />
+        <AssociationConnector Association="RecruitmentDbModel.FK__Applicati__JobId__534D60F1" ManuallyRouted="false" />
+        <AssociationConnector Association="RecruitmentDbModel.FK__JobPosts__Employ__4F7CD00D" ManuallyRouted="false" />
+      </Diagram>
+    </edmx:Diagrams>
+  </edmx:Designer>
+</edmx:Edmx>
