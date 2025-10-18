@@ -1,43 +1,87 @@
-﻿<!DOCTYPE html>
+﻿@{
+    var fullName = Session["FullName"] as string;
+    var role = Session["Role"] as string;
+}
+
+<!DOCTYPE html>
 <html>
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>@ViewBag.Title - My ASP.NET Application</title>
+    <title>@ViewBag.Title - JobFinder</title>
     @Styles.Render("~/Content/css")
     @Scripts.Render("~/bundles/modernizr")
 </head>
-<body>
-    <body style="background-color:#f8fafc; font-family:'Segoe UI',sans-serif;">
-        <nav class="navbar navbar-expand-sm navbar-dark" style="background-color:#0d6efd;">
-            <div class="container">
-                @Html.ActionLink("JobFinder", "Index", "Home", null, new { @class = "navbar-brand fw-bold text-white" })
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-                    <span class="navbar-toggler-icon"></span>
-                </button>
-                <div class="collapse navbar-collapse" id="navbarNav">
-                    <ul class="navbar-nav ms-auto">
-                        <li class="nav-item">@Html.ActionLink("Home", "Index", "Home", null, new { @class = "nav-link text-white" })</li>
-                        <li class="nav-item">@Html.ActionLink("Jobs", "Index", "JobPosts", null, new { @class = "nav-link text-white" })</li>
-                        <li class="nav-item">@Html.ActionLink("Applications", "Index", "Applications", null, new { @class = "nav-link text-white" })</li>
-                        <li class="nav-item">@Html.ActionLink("Users", "Index", "Users", null, new { @class = "nav-link text-white" })</li>
-                    </ul>
-                </div>
+
+<body style="background-color:#f8fafc; font-family:'Segoe UI',sans-serif;">
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-sm navbar-dark shadow-sm" style="background-color:#0d6efd;">
+        <div class="container">
+            @Html.ActionLink("JobFinder", "Index", "Home", null, new { @class = "navbar-brand fw-bold text-white" })
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto align-items-center">
+
+                    <!-- Luôn hiển thị các trang chính -->
+                    <li class="nav-item">@Html.ActionLink("Home", "Index", "Home", null, new { @class = "nav-link text-white" })</li>
+                    <li class="nav-item">@Html.ActionLink("Jobs", "Index", "JobPosts", null, new { @class = "nav-link text-white" })</li>
+
+                    <!-- Nếu đã đăng nhập -->
+                    @if (!string.IsNullOrEmpty(fullName))
+                    {
+                        if (role == "Admin")
+                        {
+                            <li class="nav-item">@Html.ActionLink("Users", "Index", "Users", null, new { @class = "nav-link text-white" })</li>
+                            <li class="nav-item">@Html.ActionLink("Applications", "Index", "Applications", null, new { @class = "nav-link text-white" })</li>
+                        }
+                        else if (role == "Recruiter")
+                        {
+                            <li class="nav-item">@Html.ActionLink("My Jobs", "Index", "JobPosts", null, new { @class = "nav-link text-white" })</li>
+                            <li class="nav-item">@Html.ActionLink("Post Job", "Create", "JobPosts", null, new { @class = "nav-link text-white" })</li>
+                        }
+                        else if (role == "User")
+                        {
+                            <li class="nav-item">@Html.ActionLink("My Applications", "Index", "Applications", null, new { @class = "nav-link text-white" })</li>
+                        }
+
+                        <!-- Dropdown người dùng -->
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle text-white fw-semibold" href="#" id="userMenu" role="button" data-bs-toggle="dropdown">
+                                👋 @fullName (@role)
+                            </a>
+                            <ul class="dropdown-menu dropdown-menu-end">
+                                <li>@Html.ActionLink("Trang cá nhân", "Profile", "Users", null, new { @class = "dropdown-item" })</li>
+                                <li><hr class="dropdown-divider" /></li>
+                                <li>@Html.ActionLink("Đăng xuất", "Logout", "Account", null, new { @class = "dropdown-item text-danger" })</li>
+                            </ul>
+                        </li>
+                    }
+                    else
+                    {
+                        <!-- Nếu chưa đăng nhập -->
+                        <li class="nav-item">@Html.ActionLink("Đăng nhập", "Login", "Account", null, new { @class = "nav-link text-white" })</li>
+                        <li class="nav-item">@Html.ActionLink("Đăng ký", "Register", "Account", null, new { @class = "nav-link text-white" })</li>
+                    }
+                </ul>
             </div>
-        </nav>
-
-        <div class="container mt-4">
-            @RenderBody()
         </div>
+    </nav>
 
-        <footer class="text-center text-muted mt-5 py-3" style="background-color:#e9ecef;">
-            <p>&copy; @DateTime.Now.Year - JobFinder Platform</p>
-        </footer>
+    <!-- Nội dung chính -->
+    <div class="container mt-4">
+        @RenderBody()
+    </div>
 
-        @Scripts.Render("~/bundles/jquery")
-        @Scripts.Render("~/bundles/bootstrap")
-        @RenderSection("scripts", required: false)
-    </body>
+    <!-- Footer -->
+    <footer class="text-center text-muted mt-5 py-3" style="background-color:#e9ecef;">
+        <p>&copy; @DateTime.Now.Year - <strong>JobFinder Platform</strong></p>
+    </footer>
 
+    @Scripts.Render("~/bundles/jquery")
+    @Scripts.Render("~/bundles/bootstrap")
+    @RenderSection("scripts", required: false)
 </body>
 </html>

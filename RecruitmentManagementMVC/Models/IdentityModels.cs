@@ -32,7 +32,6 @@ namespace RecruitmentManagementMVC.Models
         }
 
         // DbSet cho các bảng khác
-        public DbSet<JobPost> JobPosts { get; set; }
-        public DbSet<Application> Applications { get; set; }
+        
     }
 }

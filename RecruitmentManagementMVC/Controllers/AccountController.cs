@@ -1,67 +1,52 @@
-﻿using Microsoft.AspNet.Identity;
-using Microsoft.AspNet.Identity.EntityFramework;
-using Microsoft.Owin.Security;
-using RecruitmentManagementMVC.Models;
-using System.Threading.Tasks;
-using System.Web;
+﻿using System;
+using System.Linq;
 using System.Web.Mvc;
+using RecruitmentManagementMVC.Models;
 
 namespace RecruitmentManagementMVC.Controllers
 {
     public class AccountController : Controller
     {
-        private readonly UserManager<ApplicationUser> userManager;
-        private readonly RoleManager<IdentityRole> roleManager;
+        private RecruitmentDbEntities db = new RecruitmentDbEntities();
 
-        public AccountController()
-        {
-            var context = new ApplicationDbContext();
-            userManager = new UserManager<ApplicationUser>(new UserStore<ApplicationUser>(context));
-            roleManager = new RoleManager<IdentityRole>(new RoleStore<IdentityRole>(context));
-        }
-
-        // ======================== ĐĂNG KÝ ========================
+        // ========== ĐĂNG KÝ ==========
         [HttpGet]
         public ActionResult Register()
         {
-            ViewBag.Roles = new SelectList(new[] { "User", "Recruiter", "Admin" });
             return View();
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<ActionResult> Register(string fullName, string email, string password, string role)
+        public ActionResult Register(User user)
         {
-            var user = new ApplicationUser
+            if (ModelState.IsValid)
             {
-                UserName = email,
-                Email = email,
-                FullName = fullName
-            };
-
-            var result = await userManager.CreateAsync(user, password);
-
-            if (result.Succeeded)
-            {
-                // Nếu role chưa có thì tạo
-                if (!await roleManager.RoleExistsAsync(role))
+                // Kiểm tra email tồn tại
+                var existingUser = db.Users.FirstOrDefault(u => u.Email == user.Email);
+                if (existingUser != null)
                 {
-                    await roleManager.CreateAsync(new IdentityRole(role));
+                    ViewBag.Error = "Email đã được sử dụng!";
+                    return View(user);
                 }
 
-                // Gán quyền cho user mới
-                await userManager.AddToRoleAsync(user.Id, role);
+                // Thiết lập thông tin mặc định
+                user.CreatedAt = DateTime.Now;
+                if (string.IsNullOrEmpty(user.Role))
+                    user.Role = "User"; // Mặc định là User
 
-                TempData["Success"] = "Đăng ký thành công! Mời đăng nhập.";
+                // Hash mật khẩu (tạm thời lưu plain-text, sau có thể mã hóa)
+                db.Users.Add(user);
+                db.SaveChanges();
+
+                TempData["Success"] = "Đăng ký thành công! Vui lòng đăng nhập.";
                 return RedirectToAction("Login");
             }
 
-            ViewBag.Error = string.Join(", ", result.Errors);
-            ViewBag.Roles = new SelectList(new[] { "User", "Recruiter", "Admin" });
-            return View();
+            return View(user);
         }
 
-        // ======================== ĐĂNG NHẬP ========================
+        // ========== ĐĂNG NHẬP ==========
         [HttpGet]
         public ActionResult Login()
         {
@@ -70,50 +55,44 @@ namespace RecruitmentManagementMVC.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<ActionResult> Login(string email, string password)
+        public ActionResult Login(string email, string password)
         {
-            var user = await userManager.FindAsync(email, password);
-
-            if (user != null)
+            if (string.IsNullOrEmpty(email) || string.IsNullOrEmpty(password))
             {
-                var authManager = HttpContext.GetOwinContext().Authentication;
-                var identity = await user.GenerateUserIdentityAsync(userManager);
-
-                authManager.SignOut(DefaultAuthenticationTypes.ApplicationCookie);
-                authManager.SignIn(new AuthenticationProperties { IsPersistent = true }, identity);
-
-                // ✅ Điều hướng theo role
-                if (await userManager.IsInRoleAsync(user.Id, "Admin"))
-                    return RedirectToAction("Index", "Admin");
-
-                if (await userManager.IsInRoleAsync(user.Id, "Recruiter"))
-                    return RedirectToAction("Dashboard", "Recruiter");
-
-                return RedirectToAction("Index", "Home");
+                ViewBag.Error = "Vui lòng nhập đầy đủ thông tin!";
+                return View();
             }
 
-            ViewBag.Error = "Sai email hoặc mật khẩu!";
-            return View();
+            // Kiểm tra thông tin đăng nhập
+            var user = db.Users.FirstOrDefault(u => u.Email == email && u.PasswordHash == password);
+            if (user == null)
+            {
+                ViewBag.Error = "Sai email hoặc mật khẩu!";
+                return View();
+            }
+
+            // Lưu thông tin vào Session
+            Session["UserId"] = user.UserId;
+            Session["FullName"] = user.FullName;
+            Session["Role"] = user.Role;
+
+            // Điều hướng theo vai trò
+            switch (user.Role)
+            {
+                case "Admin":
+                    return RedirectToAction("Index", "Admin");
+                case "Recruiter":
+                    return RedirectToAction("Index", "Recruiter");
+                default:
+                    return RedirectToAction("Index", "Home");
+            }
         }
 
-        // ======================== ĐĂNG XUẤT ========================
+        // ========== ĐĂNG XUẤT ==========
         public ActionResult Logout()
         {
-            var authManager = HttpContext.GetOwinContext().Authentication;
-            authManager.SignOut(DefaultAuthenticationTypes.ApplicationCookie);
-            return RedirectToAction("Index", "Home");
-        }
-
-        // ======================== TẠO ROLE MẶC ĐỊNH ========================
-        // Gọi hàm này 1 lần ở Startup.Auth hoặc Global.asax
-        public void CreateDefaultRoles()
-        {
-            var roles = new[] { "Admin", "Recruiter", "User" };
-            foreach (var roleName in roles)
-            {
-                if (!roleManager.RoleExists(roleName))
-                    roleManager.Create(new IdentityRole(roleName));
-            }
+            Session.Clear();
+            return RedirectToAction("Login");
         }
     }
 }

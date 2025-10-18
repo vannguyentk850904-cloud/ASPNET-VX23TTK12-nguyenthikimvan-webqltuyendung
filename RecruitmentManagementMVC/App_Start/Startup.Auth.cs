@@ -14,15 +14,17 @@ namespace RecruitmentManagementMVC
     {
         public void Configuration(IAppBuilder app)
         {
+            // Cấu hình xác thực (cookie, user manager, role manager)
             ConfigureAuth(app);
 
-            // ✅ Tạo role mặc định (Admin, Recruiter, User)
+            // ✅ Tạo các role & admin mặc định
             CreateDefaultRolesAndAdmin();
         }
 
+        // ======================== CẤU HÌNH XÁC THỰC ========================
         public void ConfigureAuth(IAppBuilder app)
         {
-            // Tạo context và manager cho mỗi request
+            // Mỗi request sẽ có instance riêng của ApplicationDbContext, UserManager, RoleManager
             app.CreatePerOwinContext(ApplicationDbContext.Create);
             app.CreatePerOwinContext<ApplicationUserManager>(ApplicationUserManager.Create);
             app.CreatePerOwinContext<ApplicationRoleManager>(ApplicationRoleManager.Create);
@@ -38,46 +40,50 @@ namespace RecruitmentManagementMVC
             });
         }
 
-        // ======================== TỰ TẠO ROLE MẶC ĐỊNH ========================
+        // ======================== TẠO ROLE & ADMIN MẶC ĐỊNH ========================
         private void CreateDefaultRolesAndAdmin()
         {
-            var context = new ApplicationDbContext();
-            var roleManager = new RoleManager<IdentityRole>(new RoleStore<IdentityRole>(context));
-            var userManager = new UserManager<ApplicationUser>(new UserStore<ApplicationUser>(context));
-
-            // Danh sách role mặc định
-            string[] roles = { "Admin", "Recruiter", "User" };
-
-            foreach (var role in roles)
+            // ✅ Dùng ApplicationDbContext (Identity context), KHÔNG dùng RecruitmentEntities
+            using (var context = new ApplicationDbContext())
             {
-                if (!roleManager.RoleExists(role))
+                var roleManager = new RoleManager<IdentityRole>(new RoleStore<IdentityRole>(context));
+                var userManager = new UserManager<ApplicationUser>(new UserStore<ApplicationUser>(context));
+
+                // Danh sách role mặc định
+                string[] roles = { "Admin", "Recruiter", "User" };
+
+                foreach (var role in roles)
                 {
-                    roleManager.Create(new IdentityRole(role));
+                    if (!roleManager.RoleExists(role))
+                    {
+                        roleManager.Create(new IdentityRole(role));
+                    }
                 }
-            }
 
-            // ✅ Tạo tài khoản Admin mặc định (nếu chưa có)
-            var adminEmail = "admin@jobportal.com";
-            var adminUser = userManager.FindByEmail(adminEmail);
-            if (adminUser == null)
-            {
-                var user = new ApplicationUser
-                {
-                    UserName = adminEmail,
-                    Email = adminEmail,
-                    FullName = "Administrator"
-                };
+                // ✅ Tạo tài khoản Admin mặc định (nếu chưa có)
+                var adminEmail = "admin@jobportal.com";
+                var adminUser = userManager.FindByEmail(adminEmail);
 
-                var result = userManager.Create(user, "Admin@123"); // Mật khẩu mặc định
-                if (result.Succeeded)
+                if (adminUser == null)
                 {
-                    userManager.AddToRole(user.Id, "Admin");
+                    var user = new ApplicationUser
+                    {
+                        UserName = adminEmail,
+                        Email = adminEmail,
+                        FullName = "Administrator"
+                    };
+
+                    var result = userManager.Create(user, "Admin@123"); // Mật khẩu mặc định
+                    if (result.Succeeded)
+                    {
+                        userManager.AddToRole(user.Id, "Admin");
+                    }
                 }
             }
         }
     }
 
-    // ======================== UserManager ========================
+    // ======================== USER MANAGER ========================
     public class ApplicationUserManager : UserManager<ApplicationUser>
     {
         public ApplicationUserManager(IUserStore<ApplicationUser> store)
@@ -92,7 +98,7 @@ namespace RecruitmentManagementMVC
         }
     }
 
-    // ======================== RoleManager ========================
+    // ======================== ROLE MANAGER ========================
     public class ApplicationRoleManager : RoleManager<IdentityRole>
     {
         public ApplicationRoleManager(IRoleStore<IdentityRole, string> roleStore)
