@@ -1,0 +1,51 @@
+﻿@model IEnumerable<RecruitmentManagementMVC.Models.Application>
+
+@{
+    ViewBag.Title = "Index";
+}
+
+<h2>Index</h2>
+
+<p>
+    @Html.ActionLink("Create New", "Create")
+</p>
+<table class="table">
+    <tr>
+        <th>
+            @Html.DisplayNameFor(model => model.CoverLetter)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.AppliedAt)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.User.FullName)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.JobPost.Title)
+        </th>
+        <th></th>
+    </tr>
+
+@foreach (var item in Model) {
+    <tr>
+        <td>
+            @Html.DisplayFor(modelItem => item.CoverLetter)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.AppliedAt)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.User.FullName)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.JobPost.Title)
+        </td>
+        <td>
+            @Html.ActionLink("Edit", "Edit", new { id=item.ApplicationId }) |
+            @Html.ActionLink("Details", "Details", new { id=item.ApplicationId }) |
+            @Html.ActionLink("Delete", "Delete", new { id=item.ApplicationId })
+        </td>
+    </tr>
+}
+
+</table>

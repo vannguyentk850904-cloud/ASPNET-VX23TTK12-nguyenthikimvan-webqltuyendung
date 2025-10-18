@@ -1,30 +1,28 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Web;
+﻿using System.Linq;
 using System.Web.Mvc;
+using RecruitmentManagementMVC.Models; // nhớ thêm dòng này
 
-namespace RecruitmentManagementMVC.Controllers
+public class HomeController : Controller
 {
-    public class HomeController : Controller
+    private RecruitmentDbEntities db = new RecruitmentDbEntities();
+
+    public ActionResult Index()
     {
-        public ActionResult Index()
-        {
-            return View();
-        }
+        var latestJobs = db.JobPosts
+            .OrderByDescending(j => j.CreatedAt)
+            .Take(6)
+            .ToList();
 
-        public ActionResult About()
-        {
-            ViewBag.Message = "Your application description page.";
+        return View(latestJobs);
+    }
 
-            return View();
-        }
+    public ActionResult About()
+    {
+        return View();
+    }
 
-        public ActionResult Contact()
-        {
-            ViewBag.Message = "Your contact page.";
-
-            return View();
-        }
+    public ActionResult Contact()
+    {
+        return View();
     }
 }

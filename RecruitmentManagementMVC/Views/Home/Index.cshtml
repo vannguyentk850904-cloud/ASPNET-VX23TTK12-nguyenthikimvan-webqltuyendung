@@ -1,33 +1,113 @@
-﻿@{
-    ViewBag.Title = "Home Page";
-}
+﻿@model IEnumerable<RecruitmentManagementMVC.Models.JobPost>
 
-<main>
-    <section class="row" aria-labelledby="aspnetTitle">
-        <h1 id="title">ASP.NET</h1>
-        <p class="lead">ASP.NET is a free web framework for building great Web sites and Web applications using HTML, CSS and JavaScript.</p>
-        <p><a href="https://asp.net" class="btn btn-primary btn-md">Learn more &raquo;</a></p>
-    </section>
+<style>
+    body {
+        background: #f8f9fb;
+        font-family: "Segoe UI", sans-serif;
+    }
 
+    .page-header {
+        text-align: center;
+        margin-bottom: 50px;
+        position: relative;
+    }
+
+        .page-header h1 {
+            font-weight: 800;
+            background: linear-gradient(90deg, #6a11cb, #2575fc);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .page-header p {
+            color: #6c757d;
+            font-size: 1.1rem;
+        }
+
+    .job-card {
+        border: none;
+        border-radius: 15px;
+        transition: all 0.3s ease;
+        overflow: hidden;
+        background: #fff;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.06);
+    }
+
+        .job-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+        }
+
+        .job-card .card-body {
+            padding: 25px;
+        }
+
+        .job-card h5 {
+            font-weight: 700;
+            color: #6a11cb;
+            margin-bottom: 12px;
+        }
+
+    .job-info {
+        color: #555;
+        font-size: 0.95rem;
+    }
+
+        .job-info i {
+            color: #2575fc;
+            margin-right: 6px;
+        }
+
+    .btn-view {
+        background: linear-gradient(45deg, #6a11cb, #2575fc);
+        border: none;
+        border-radius: 8px;
+        font-weight: 500;
+        transition: 0.3s;
+        color: #fff;
+        padding: 8px 16px;
+    }
+
+        .btn-view:hover {
+            transform: scale(1.05);
+            background: linear-gradient(45deg, #5b0faf, #1f5edb);
+        }
+
+    .salary {
+        color: #28a745;
+        font-weight: 600;
+    }
+</style>
+
+<div class="page-header">
+    <h1>🌟 Việc Làm Mới Nhất</h1>
+    <p>Tìm kiếm cơ hội nghề nghiệp phù hợp với bạn</p>
+</div>
+
+<div class="container">
     <div class="row">
-        <section class="col-md-4" aria-labelledby="gettingStartedTitle">
-            <h2 id="gettingStartedTitle">Getting started</h2>
-            <p>
-                ASP.NET MVC gives you a powerful, patterns-based way to build dynamic websites that
-                enables a clean separation of concerns and gives you full control over markup
-                for enjoyable, agile development.
-            </p>
-            <p><a class="btn btn-outline-dark" href="https://go.microsoft.com/fwlink/?LinkId=301865">Learn more &raquo;</a></p>
-        </section>
-        <section class="col-md-4" aria-labelledby="librariesTitle">
-            <h2 id="librariesTitle">Get more libraries</h2>
-            <p>NuGet is a free Visual Studio extension that makes it easy to add, remove, and update libraries and tools in Visual Studio projects.</p>
-            <p><a class="btn btn-outline-dark" href="https://go.microsoft.com/fwlink/?LinkId=301866">Learn more &raquo;</a></p>
-        </section>
-        <section class="col-md-4" aria-labelledby="hostingTitle">
-            <h2 id="hostingTitle">Web Hosting</h2>
-            <p>You can easily find a web hosting company that offers the right mix of features and price for your applications.</p>
-            <p><a class="btn btn-outline-dark" href="https://go.microsoft.com/fwlink/?LinkId=301867">Learn more &raquo;</a></p>
-        </section>
+        @foreach (var job in Model)
+        {
+            <div class="col-md-4 mb-4 d-flex">
+                <div class="card job-card w-100">
+                    <div class="card-body d-flex flex-column justify-content-between">
+                        <div>
+                            <h5>@job.Title</h5>
+                            <p class="text-muted">
+                                @((job.Description ?? "Không có mô tả").Substring(0, Math.Min((job.Description ?? "").Length, 80)))...
+                            </p>
+                            <p class="job-info"><i class="fas fa-map-marker-alt"></i><strong>Địa điểm:</strong> @job.Location</p>
+                            <p class="job-info"><i class="fas fa-money-bill-wave"></i><strong>Lương:</strong> <span class="salary">@string.Format("{0:N0}", Convert.ToDecimal(job.Salary)) VNĐ</span></p>
+                        </div>
+                        <div class="mt-3 text-end">
+                            <a href="@Url.Action("Details", "JobPosts", new { id = job.JobId })" class="btn btn-view">Xem chi tiết</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
     </div>
-</main>
+</div>
+
+<!-- Thêm link Font Awesome nếu chưa có -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
