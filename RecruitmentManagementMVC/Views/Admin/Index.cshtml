@@ -1,9 +1,158 @@
 ﻿@{
-    ViewBag.Title = "Admin Dashboard";
+    ViewBag.Title = "Bảng điều khiển quản trị";
+    Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
-<div class="container mt-5 text-center">
-    <h2 class="text-primary">Trang Quản Trị (Admin Dashboard)</h2>
-    <p class="text-muted">Xin chào, quản trị viên! Bạn có thể quản lý người dùng, công việc, và nhà tuyển dụng tại đây.</p>
-    <a href="@Url.Action("Index", "Home")" class="btn btn-secondary mt-3">Về Trang Chủ</a>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<style>
+    body {
+        background: #f8f9fb;
+        font-family: "Segoe UI", sans-serif;
+    }
+
+    .dashboard-header {
+        text-align: center;
+        margin: 20px 0 10px;
+    }
+
+        .dashboard-header h2 {
+            font-weight: 700;
+            font-size: 1.8rem;
+            background: linear-gradient(90deg, #6a11cb, #2575fc);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+    .stat-card {
+        border: none;
+        border-radius: 16px;
+        padding: 18px;
+        color: white;
+        font-size: 1rem;
+        font-weight: 600;
+        text-align: center;
+        box-shadow: 0 3px 8px rgba(0, 0, 0, 0.08);
+        transition: transform 0.2s ease;
+    }
+
+        .stat-card:hover {
+            transform: scale(1.03);
+        }
+
+    .bg-users {
+        background: linear-gradient(135deg, #6a11cb, #2575fc);
+    }
+
+    .bg-jobs {
+        background: linear-gradient(135deg, #00b09b, #96c93d);
+    }
+
+    .chart-container {
+        background: #fff;
+        border-radius: 14px;
+        padding: 20px;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.06);
+        margin-top: 20px;
+    }
+
+    canvas {
+        width: 100% !important;
+        height: 320px !important;
+    }
+
+</style>
+
+<div class="container">
+    <div class="dashboard-header">
+        <h2>📊 BẢNG ĐIỀU KHIỂN QUẢN TRỊ</h2>
+    </div>
+
+    <div class="row g-4">
+        <div class="col-md-6">
+            <div class="stat-card bg-users">
+                <i class="fas fa-users fa-2x mb-2"></i><br />
+                Tổng số người dùng
+                <h3>@ViewBag.TotalUsers</h3>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="stat-card bg-jobs">
+                <i class="fas fa-briefcase fa-2x mb-2"></i><br />
+                Tổng số việc làm
+                <h3>@ViewBag.TotalJobs</h3>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-5">
+        <div class="col-md-6">
+            <div class="chart-container">
+                <h5 class="text-center mb-3">Phân bố người dùng theo vai trò</h5>
+                <canvas id="roleChart"></canvas>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="chart-container">
+                <h5 class="text-center mb-3">Số lượng việc làm theo tháng</h5>
+                <canvas id="jobChart"></canvas>
+            </div>
+        </div>
+    </div>
 </div>
+
+<script>
+    // ======= Dữ liệu biểu đồ vai trò người dùng =======
+    var roleLabels = [@Html.Raw(ViewBag.RoleLabels)];
+    var roleCounts = [@Html.Raw(ViewBag.RoleCounts)];
+
+    var ctxRole = document.getElementById('roleChart').getContext('2d');
+    new Chart(ctxRole, {
+        type: 'pie',
+        data: {
+            labels: roleLabels,
+            datasets: [{
+                data: roleCounts,
+                backgroundColor: ['#6a11cb', '#2575fc', '#00b09b', '#96c93d', '#ff6384']
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: { position: 'bottom' },
+            }
+        }
+    });
+
+    // ======= Dữ liệu biểu đồ việc làm theo tháng =======
+    var monthLabels = [@Html.Raw(ViewBag.MonthLabels)];
+    var monthCounts = [@Html.Raw(ViewBag.MonthCounts)];
+
+    var ctxJob = document.getElementById('jobChart').getContext('2d');
+    new Chart(ctxJob, {
+        type: 'line',
+        data: {
+            labels: monthLabels,
+            datasets: [{
+                label: 'Số việc làm',
+                data: monthCounts,
+                borderColor: '#6a11cb',
+                backgroundColor: 'rgba(106, 17, 203, 0.2)',
+                borderWidth: 2,
+                fill: true,
+                tension: 0.3,
+                pointBackgroundColor: '#6a11cb'
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: { display: false },
+            },
+            scales: {
+                y: { beginAtZero: true, ticks: { stepSize: 1 } }
+            }
+        }
+    });
+</script>
