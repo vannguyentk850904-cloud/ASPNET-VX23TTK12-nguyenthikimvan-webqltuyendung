@@ -1,7 +1,8 @@
-﻿using System;
+﻿using RecruitmentManagementMVC.Models;
+using System;
 using System.Linq;
 using System.Web.Mvc;
-using RecruitmentManagementMVC.Models;
+using System.Web.Security;
 
 namespace RecruitmentManagementMVC.Controllers
 {
@@ -22,7 +23,7 @@ namespace RecruitmentManagementMVC.Controllers
         {
             if (ModelState.IsValid)
             {
-                // Kiểm tra email tồn tại
+                // Kiểm tra email đã tồn tại
                 var existingUser = db.Users.FirstOrDefault(u => u.Email == user.Email);
                 if (existingUser != null)
                 {
@@ -30,21 +31,49 @@ namespace RecruitmentManagementMVC.Controllers
                     return View(user);
                 }
 
-                // Thiết lập thông tin mặc định
-                user.CreatedAt = DateTime.Now;
-                if (string.IsNullOrEmpty(user.Role))
-                    user.Role = "User"; // Mặc định là User
+                // Ngăn người dùng tự đăng ký quyền Admin
+                if (user.Role == "Admin")
+                {
+                    ViewBag.Error = "Bạn không thể đăng ký tài khoản quản trị!";
+                    return View(user);
+                }
 
-                // Hash mật khẩu (tạm thời lưu plain-text, sau có thể mã hóa)
+                user.CreatedAt = DateTime.Now;
+
+                // Nếu không chọn vai trò thì mặc định là Ứng viên
+                if (string.IsNullOrEmpty(user.Role))
+                {
+                    user.Role = "Candidate";
+                }
+
+                // Gán trạng thái duyệt
+                if (user.Role == "Employer")
+                {
+                    user.IsApproved = false; // Nhà tuyển dụng cần được admin duyệt
+                }
+                else
+                {
+                    user.IsApproved = true; // Ứng viên được kích hoạt ngay
+                }
+
                 db.Users.Add(user);
                 db.SaveChanges();
 
-                TempData["Success"] = "Đăng ký thành công! Vui lòng đăng nhập.";
+                if (user.Role == "Employer")
+                {
+                    TempData["Success"] = "Đăng ký thành công! Vui lòng chờ quản trị viên duyệt tài khoản của bạn.";
+                }
+                else
+                {
+                    TempData["Success"] = "Đăng ký thành công! Vui lòng đăng nhập.";
+                }
+
                 return RedirectToAction("Login");
             }
 
             return View(user);
         }
+
 
         // ========== ĐĂNG NHẬP ==========
         [HttpGet]
@@ -63,7 +92,6 @@ namespace RecruitmentManagementMVC.Controllers
                 return View();
             }
 
-            // Kiểm tra thông tin đăng nhập
             var user = db.Users.FirstOrDefault(u => u.Email == email && u.PasswordHash == password);
             if (user == null)
             {
@@ -71,28 +99,46 @@ namespace RecruitmentManagementMVC.Controllers
                 return View();
             }
 
-            // Lưu thông tin vào Session
+            // ❌ Nếu là Employer mà chưa được duyệt
+            if (user.Role == "Employer" && !user.IsApproved)
+            {
+                ViewBag.Error = "Tài khoản của bạn chưa được quản trị viên duyệt. Vui lòng quay lại sau!";
+                return View();
+            }
+
+            // ✅ Lưu cookie xác thực
+            FormsAuthentication.SetAuthCookie(user.Email, false);
+
+            // ✅ Lưu thông tin Session
             Session["UserId"] = user.UserId;
             Session["FullName"] = user.FullName;
             Session["Role"] = user.Role;
 
-            // Điều hướng theo vai trò
+            // ✅ Điều hướng theo vai trò
             switch (user.Role)
             {
                 case "Admin":
                     return RedirectToAction("Index", "Admin");
-                case "Recruiter":
-                    return RedirectToAction("Index", "Recruiter");
+
+                case "Employer":
+                    return RedirectToAction("Index", "JobPosts");
+
+                case "Candidate":
                 default:
                     return RedirectToAction("Index", "Home");
             }
         }
 
+
+
+
         // ========== ĐĂNG XUẤT ==========
         public ActionResult Logout()
         {
+            FormsAuthentication.SignOut(); // ✅ xoá cookie xác thực
             Session.Clear();
             return RedirectToAction("Login");
         }
+
     }
 }

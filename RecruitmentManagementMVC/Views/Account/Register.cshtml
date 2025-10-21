@@ -2,35 +2,115 @@
 @{
     ViewBag.Title = "Đăng ký tài khoản";
 }
-<div class="container mt-5" style="max-width: 500px;">
-    <h2 class="text-center text-primary mb-4">Đăng ký</h2>
 
-    @using (Html.BeginForm("Register", "Account", FormMethod.Post))
-    {
-        @Html.AntiForgeryToken()
+<div class="register-wrapper d-flex align-items-center justify-content-center">
+    <div class="register-card p-4 shadow">
+        <h2 class="text-center text-primary mb-4">Đăng ký</h2>
 
-        <div class="form-group mb-3">
-            <label>Họ tên</label>
-            @Html.TextBoxFor(m => m.FullName, new { @class = "form-control", required = "required" })
-        </div>
+        @using (Html.BeginForm("Register", "Account", FormMethod.Post))
+        {
+            @Html.AntiForgeryToken()
 
-        <div class="form-group mb-3">
-            <label>Email</label>
-            @Html.TextBoxFor(m => m.Email, new { @class = "form-control", type = "email", required = "required" })
-        </div>
+            <div class="form-group mb-3">
+                <label>Họ tên</label>
+                @Html.TextBoxFor(m => m.FullName, new { @class = "form-control", required = "required" })
+            </div>
 
-        <div class="form-group mb-3">
-            <label>Mật khẩu</label>
-            @Html.PasswordFor(m => m.PasswordHash, new { @class = "form-control", required = "required" })
-        </div>
+            <div class="form-group mb-3">
+                <label>Email</label>
+                @Html.TextBoxFor(m => m.Email, new { @class = "form-control", type = "email", required = "required" })
+            </div>
 
-        <div class="form-group mb-3">
-            <label>Vai trò</label>
-            @Html.DropDownListFor(m => m.Role, new SelectList(new[] { "User", "Recruiter", "Admin" }), "Chọn quyền", new { @class = "form-control" })
-        </div>
+            <div class="form-group mb-3">
+                <label>Mật khẩu</label>
+                @Html.PasswordFor(m => m.PasswordHash, new { @class = "form-control", required = "required" })
+            </div>
 
-        <button type="submit" class="btn btn-primary w-100">Đăng ký</button>
+            <div class="form-group mb-3">
+                <label>Vai trò</label>
+                @Html.DropDownListFor(model => model.Role, new SelectList(new[] {
+                    new { Text = "Nhà tuyển dụng", Value = "Recruiter" },
+                    new { Text = "Ứng viên", Value = "Candidate" }
+                }, "Value", "Text"), "Chọn vai trò", new { @class = "form-control" })
 
-        <p class="text-danger mt-3">@ViewBag.Error</p>
-    }
+            </div>
+
+            <div class="text-center">
+                <button type="submit" class="btn btn-primary px-5">Đăng ký</button>
+            </div>
+
+            <p class="text-danger mt-3 text-center">@ViewBag.Error</p>
+        }
+
+        <p class="text-center mt-3">
+            Đã có tài khoản? <a href="@Url.Action("Login", "Account")">Đăng nhập ngay</a>
+        </p>
+    </div>
 </div>
+
+<style>
+    .register-wrapper {
+        height: calc(100vh - 80px);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        background-color: #f6f6fb;
+    }
+
+    .register-card {
+        background-color: white;
+        border-radius: 16px;
+        width: 100%;
+        max-width: 420px;
+        box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
+        text-align: center; /* canh giữa toàn bộ nội dung bên trong */
+    }
+
+        /* Căn giữa label + input đẹp hơn */
+        .register-card .form-group {
+            text-align: left; /* giữ label trái nhưng canh input giữa form */
+            margin-left: auto;
+            margin-right: auto;
+            width: 85%; /* thu hẹp input để nhìn cân giữa */
+        }
+
+    label {
+        font-weight: 500;
+        display: block;
+        margin-bottom: 6px;
+        color: #333;
+    }
+
+    input.form-control,
+    select.form-control {
+        border-radius: 8px;
+        background-color: #f3f2ff;
+        border: 1px solid #dcd6ff;
+        width: 100%;
+        padding: 10px;
+    }
+
+        input.form-control:focus,
+        select.form-control:focus {
+            border-color: #6f2cff;
+            box-shadow: 0 0 0 2px rgba(111, 44, 255, 0.2);
+        }
+
+    .btn-primary {
+        background-color: #6f2cff;
+        border: none;
+        border-radius: 8px;
+        font-weight: 600;
+        padding: 10px 50px;
+        transition: background 0.3s ease;
+    }
+
+        .btn-primary:hover {
+            background-color: #5a23cc;
+        }
+
+    .text-primary {
+        color: #6f2cff !important;
+    }
+</style>
+
