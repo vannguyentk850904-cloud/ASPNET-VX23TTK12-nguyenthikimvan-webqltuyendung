@@ -19,6 +19,8 @@ namespace RecruitmentManagementMVC.Models
         public int CandidateId { get; set; }
         public string CoverLetter { get; set; }
         public Nullable<System.DateTime> AppliedAt { get; set; }
+        public string CvFilePath { get; set; }
+        public string Status { get; set; }
     
         public virtual User User { get; set; }
         public virtual JobPost JobPost { get; set; }

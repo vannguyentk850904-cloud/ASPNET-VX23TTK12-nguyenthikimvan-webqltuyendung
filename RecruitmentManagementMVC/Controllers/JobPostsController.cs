@@ -1,11 +1,10 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
 using System.Net;
-using System.Web;
 using System.Web.Mvc;
 using RecruitmentManagementMVC.Models;
+using RecruitmentManagementMVC.Filters;
 
 namespace RecruitmentManagementMVC.Controllers
 {
@@ -13,118 +12,222 @@ namespace RecruitmentManagementMVC.Controllers
     {
         private RecruitmentDbEntities db = new RecruitmentDbEntities();
 
-        // GET: JobPosts
+        // ==================== DANH SÁCH JOB ====================
         public ActionResult Index()
         {
-            var jobPosts = db.JobPosts.Include(j => j.User);
-            return View(jobPosts.ToList());
+            var role = Session["Role"] as string;
+            var userId = Session["UserId"] as int?;
+
+            // Lấy tất cả job và include thông tin nhà tuyển dụng
+            var jobs = db.JobPosts.Include(j => j.User)
+                                  .OrderByDescending(j => j.CreatedAt)
+                                  .ToList();
+
+            ViewBag.Role = role;
+            ViewBag.UserId = userId;
+
+            return View(jobs);
         }
 
-        // GET: JobPosts/Details/5
+        // ==================== VIỆC ĐÃ TẠO (DÀNH CHO NHÀ TUYỂN DỤNG) ====================
+        [AuthorizeRole("Recruiter", "Employer", "Admin")]
+        public ActionResult MyJobs()
+        {
+            int? userId = Session["UserId"] as int?;
+            if (!userId.HasValue)
+            {
+                TempData["Error"] = "Vui lòng đăng nhập để xem công việc của bạn.";
+                return RedirectToAction("Login", "Account");
+            }
+
+            var jobs = db.JobPosts
+                .Include(j => j.User)
+                .Where(j => j.EmployerId == userId.Value)
+                .OrderByDescending(j => j.CreatedAt)
+                .ToList();
+
+            ViewBag.Role = Session["Role"];
+            ViewBag.UserId = userId;
+
+            // Dùng lại view Index để hiển thị danh sách giống nhau
+            return View("Index", jobs);
+        }
+
+
+
+        // ==================== CHI TIẾT JOB ====================
         public ActionResult Details(int? id)
         {
             if (id == null)
-            {
                 return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
-            }
-            JobPost jobPost = db.JobPosts.Find(id);
-            if (jobPost == null)
-            {
+
+            var job = db.JobPosts.Include(j => j.User).FirstOrDefault(j => j.JobId == id);
+            if (job == null)
                 return HttpNotFound();
-            }
-            return View(jobPost);
+
+            return View(job);
         }
 
-        // GET: JobPosts/Create
+        // ==================== TẠO JOB (GET) ====================
+        [AuthorizeRole("Recruiter", "Admin", "Employer")]
         public ActionResult Create()
         {
-            ViewBag.EmployerId = new SelectList(db.Users, "UserId", "FullName");
             return View();
         }
 
-        // POST: JobPosts/Create
-        // To protect from overposting attacks, enable the specific properties you want to bind to, for 
-        // more details see https://go.microsoft.com/fwlink/?LinkId=317598.
+        // ==================== TẠO JOB (POST) ====================
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Create([Bind(Include = "JobId,EmployerId,Title,Description,Location,Salary,CreatedAt")] JobPost jobPost)
+        [AuthorizeRole("Recruiter", "Admin", "Employer")]
+        public ActionResult Create([Bind(Include = "Title,Description,Location,Salary,ExpiryDate")] JobPost jobPost)
         {
-            if (ModelState.IsValid)
-            {
-                db.JobPosts.Add(jobPost);
-                db.SaveChanges();
-                return RedirectToAction("Index");
-            }
+            if (!ModelState.IsValid)
+                return View(jobPost);
 
-            ViewBag.EmployerId = new SelectList(db.Users, "UserId", "FullName", jobPost.EmployerId);
-            return View(jobPost);
-        }
+            int userId = Convert.ToInt32(Session["UserId"]);
 
-        // GET: JobPosts/Edit/5
-        public ActionResult Edit(int? id)
-        {
-            if (id == null)
-            {
-                return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
-            }
-            JobPost jobPost = db.JobPosts.Find(id);
-            if (jobPost == null)
-            {
-                return HttpNotFound();
-            }
-            ViewBag.EmployerId = new SelectList(db.Users, "UserId", "FullName", jobPost.EmployerId);
-            return View(jobPost);
-        }
+            jobPost.EmployerId = userId;
+            jobPost.CreatedAt = DateTime.Now;
+            jobPost.UpdatedAt = DateTime.Now;
+            jobPost.User = db.Users.Find(userId);
 
-        // POST: JobPosts/Edit/5
-        // To protect from overposting attacks, enable the specific properties you want to bind to, for 
-        // more details see https://go.microsoft.com/fwlink/?LinkId=317598.
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public ActionResult Edit([Bind(Include = "JobId,EmployerId,Title,Description,Location,Salary,CreatedAt")] JobPost jobPost)
-        {
-            if (ModelState.IsValid)
-            {
-                db.Entry(jobPost).State = EntityState.Modified;
-                db.SaveChanges();
-                return RedirectToAction("Index");
-            }
-            ViewBag.EmployerId = new SelectList(db.Users, "UserId", "FullName", jobPost.EmployerId);
-            return View(jobPost);
-        }
-
-        // GET: JobPosts/Delete/5
-        public ActionResult Delete(int? id)
-        {
-            if (id == null)
-            {
-                return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
-            }
-            JobPost jobPost = db.JobPosts.Find(id);
-            if (jobPost == null)
-            {
-                return HttpNotFound();
-            }
-            return View(jobPost);
-        }
-
-        // POST: JobPosts/Delete/5
-        [HttpPost, ActionName("Delete")]
-        [ValidateAntiForgeryToken]
-        public ActionResult DeleteConfirmed(int id)
-        {
-            JobPost jobPost = db.JobPosts.Find(id);
-            db.JobPosts.Remove(jobPost);
+            db.JobPosts.Add(jobPost);
             db.SaveChanges();
+
+            TempData["Success"] = "Đăng tin tuyển dụng thành công!";
             return RedirectToAction("Index");
         }
 
+        // ==================== CHỈNH SỬA JOB (GET) ====================
+        [AuthorizeRole("Recruiter", "Admin", "Employer")]
+        public ActionResult Edit(int? id)
+        {
+            if (id == null)
+                return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
+
+            var job = db.JobPosts.Find(id);
+            if (job == null)
+                return HttpNotFound();
+
+            string role = Session["Role"] as string;
+            int? userId = Session["UserId"] as int?;
+
+            if ((role == "Recruiter" || role == "Employer") && job.EmployerId != userId)
+            {
+                TempData["Error"] = "Bạn không có quyền chỉnh sửa bài đăng này!";
+                return RedirectToAction("Index");
+            }
+
+            return View(job);
+        }
+
+        // ==================== CHỈNH SỬA JOB (POST) ====================
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        [AuthorizeRole("Recruiter", "Admin", "Employer")]
+        public ActionResult Edit([Bind(Include = "JobId,Title,Description,Location,Salary,ExpiryDate")] JobPost jobPost)
+        {
+            if (!ModelState.IsValid)
+                return View(jobPost);
+
+            var existing = db.JobPosts.Find(jobPost.JobId);
+            if (existing == null)
+                return HttpNotFound();
+
+            string role = Session["Role"] as string;
+            int? userId = Session["UserId"] as int?;
+
+            if ((role == "Recruiter" || role == "Employer") && existing.EmployerId != userId)
+            {
+                TempData["Error"] = "Bạn không có quyền chỉnh sửa bài đăng này!";
+                return RedirectToAction("Index");
+            }
+
+            // ✅ Cập nhật thông tin
+            existing.Title = jobPost.Title;
+            existing.Description = jobPost.Description;
+            existing.Location = jobPost.Location;
+            existing.Salary = jobPost.Salary;
+            existing.ExpiryDate = jobPost.ExpiryDate;
+            existing.UpdatedAt = DateTime.Now;
+
+            db.Entry(existing).State = EntityState.Modified;
+            db.SaveChanges();
+
+            TempData["Success"] = "Cập nhật bài đăng thành công!";
+            return RedirectToAction("Index");
+        }
+
+        // ==================== XÓA JOB (GET) ====================
+        [AuthorizeRole("Recruiter", "Admin", "Employer")]
+        public ActionResult Delete(int? id)
+        {
+            if (id == null)
+                return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
+
+            var job = db.JobPosts.Find(id);
+            if (job == null)
+                return HttpNotFound();
+
+            string role = Session["Role"] as string;
+            int? userId = Session["UserId"] as int?;
+
+            if ((role == "Recruiter" || role == "Employer") && job.EmployerId != userId)
+            {
+                TempData["Error"] = "Bạn không có quyền xóa bài đăng này!";
+                return RedirectToAction("Index");
+            }
+
+            return View(job);
+        }
+
+        // ==================== XÓA JOB (POST) ====================
+        [HttpPost, ActionName("Delete")]
+        [ValidateAntiForgeryToken]
+        [AuthorizeRole("Recruiter", "Admin", "Employer")]
+        public ActionResult DeleteConfirmed(int id)
+        {
+            var job = db.JobPosts.Find(id);
+            if (job == null)
+                return HttpNotFound();
+
+            string role = Session["Role"] as string;
+            int? userId = Session["UserId"] as int?;
+
+            if ((role == "Recruiter" || role == "Employer") && job.EmployerId != userId)
+            {
+                TempData["Error"] = "Bạn không có quyền xóa bài đăng này!";
+                return RedirectToAction("Index");
+            }
+
+            try
+            {
+                // Xóa các Application liên quan trước
+                var relatedApps = db.Applications.Where(a => a.JobId == id).ToList();
+                if (relatedApps.Any())
+                    db.Applications.RemoveRange(relatedApps);
+
+                db.JobPosts.Remove(job);
+                db.SaveChanges();
+
+                TempData["Success"] = "Đã xóa bài đăng thành công!";
+            }
+            catch (Exception ex)
+            {
+                TempData["Error"] = "Không thể xóa bài đăng: " + ex.Message;
+            }
+
+            return RedirectToAction("Index");
+        }
+        
+
+
+        // ==================== GIẢI PHÓNG DB ====================
         protected override void Dispose(bool disposing)
         {
             if (disposing)
-            {
                 db.Dispose();
-            }
+
             base.Dispose(disposing);
         }
     }

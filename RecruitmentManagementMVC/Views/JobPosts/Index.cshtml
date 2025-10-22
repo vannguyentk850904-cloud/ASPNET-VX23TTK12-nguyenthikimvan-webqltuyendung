@@ -1,63 +1,159 @@
 ﻿@model IEnumerable<RecruitmentManagementMVC.Models.JobPost>
 
 @{
-    ViewBag.Title = "Index";
+    ViewBag.Title = "Danh sách việc làm";
+    string role = Session["Role"] as string;
+    int? userId = Session["UserId"] as int?;
 }
 
-<h2>Index</h2>
+<style>
+    body {
+        background-color: #f8f9fb;
+        font-family: 'Segoe UI', sans-serif;
+    }
 
-<p>
-    @Html.ActionLink("Create New", "Create")
-</p>
-<table class="table">
-    <tr>
-        <th>
-            @Html.DisplayNameFor(model => model.Title)
-        </th>
-        <th>
-            @Html.DisplayNameFor(model => model.Description)
-        </th>
-        <th>
-            @Html.DisplayNameFor(model => model.Location)
-        </th>
-        <th>
-            @Html.DisplayNameFor(model => model.Salary)
-        </th>
-        <th>
-            @Html.DisplayNameFor(model => model.CreatedAt)
-        </th>
-        <th>
-            @Html.DisplayNameFor(model => model.User.FullName)
-        </th>
-        <th></th>
-    </tr>
+    h2 {
+        font-weight: 700;
+        color: #6a11cb;
+    }
 
-@foreach (var item in Model) {
-    <tr>
-        <td>
-            @Html.DisplayFor(modelItem => item.Title)
-        </td>
-        <td>
-            @Html.DisplayFor(modelItem => item.Description)
-        </td>
-        <td>
-            @Html.DisplayFor(modelItem => item.Location)
-        </td>
-        <td>
-            @Html.DisplayFor(modelItem => item.Salary)
-        </td>
-        <td>
-            @Html.DisplayFor(modelItem => item.CreatedAt)
-        </td>
-        <td>
-            @Html.DisplayFor(modelItem => item.User.FullName)
-        </td>
-        <td>
-            @Html.ActionLink("Edit", "Edit", new { id=item.JobId }) |
-            @Html.ActionLink("Details", "Details", new { id=item.JobId }) |
-            @Html.ActionLink("Delete", "Delete", new { id=item.JobId })
-        </td>
-    </tr>
-}
+    .btn-primary-gradient {
+        background: linear-gradient(45deg, #6a11cb, #2575fc);
+        border: none;
+        color: #fff;
+        transition: 0.3s;
+    }
 
-</table>
+        .btn-primary-gradient:hover {
+            transform: scale(1.05);
+            background: linear-gradient(45deg, #5b0faf, #1f5edb);
+        }
+
+    .table {
+        background: #fff;
+        border-radius: 10px;
+        overflow: hidden;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+    }
+
+    thead {
+        background: linear-gradient(90deg, #6a11cb, #2575fc);
+        color: white;
+        text-align: center;
+    }
+
+    tbody tr:hover {
+        background-color: #f1f5ff;
+        transition: 0.2s;
+    }
+
+    .salary {
+        color: #28a745;
+        font-weight: 600;
+    }
+</style>
+
+<div class="container mt-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>Danh sách việc làm</h2>
+
+        @if ( role == "Admin")
+        {
+            <a href="@Url.Action("Create", "JobPosts")" class="btn btn-success shadow-sm">
+                <i class="bi bi-plus-circle"></i> Đăng bài
+            </a>
+        }
+    </div>
+
+    <table class="table table-hover align-middle text-center">
+        <thead>
+            <tr>
+                <th>Tiêu đề</th>
+                <th>Mô tả</th>
+                <th>Địa điểm</th>
+                <th>Mức lương</th>
+                <th>Ngày đăng</th>
+                <th>Ngày hết hạn</th>
+                <th>Nhà tuyển dụng</th>
+                <th>Hành động</th>
+            </tr>
+        </thead>
+        <tbody>
+            @if (Model != null && Model.Any())
+            {
+                foreach (var item in Model)
+                {
+                    <tr>
+                        <td>@item.Title</td>
+                        <td>@item.Description</td>
+                        <td>@item.Location</td>
+                        <td class="salary">
+                            @{
+                                decimal salary;
+                                if (decimal.TryParse(Convert.ToString(item.Salary), out salary))
+                                {
+                                    @String.Format("{0:N0}", salary)
+                                }
+                                else
+                                {
+                                    @:Đang cập nhật
+                                }
+                            } VNĐ
+                        </td>
+                        <td>@(item.CreatedAt?.ToString("dd/MM/yyyy") ?? "-")</td>
+
+                        <td>
+                            @{
+                                // Nếu chưa có cột ExpiryDate thì mặc định cộng thêm 30 ngày
+                                DateTime expiry = item.ExpiryDate ?? item.CreatedAt.GetValueOrDefault().AddDays(30);
+                                @expiry.ToString("dd/MM/yyyy")
+                            }
+                        </td>
+
+                        <td>@(item.User != null ? item.User.FullName : "Không xác định")</td>
+
+                        <td>
+                            <a href="@Url.Action("Details", "JobPosts", new { id = item.JobId })"
+                               class="btn btn-sm btn-outline-primary me-1">
+                                <i class="bi bi-eye"></i> Chi tiết
+                            </a>
+
+                            @if (role == "Admin")
+                            {
+                                <a href="@Url.Action("Edit", "JobPosts", new { id = item.JobId })"
+                                   class="btn btn-sm btn-outline-warning me-1">
+                                    <i class="bi bi-pencil"></i> Sửa
+                                </a>
+                                <a href="@Url.Action("Delete", "JobPosts", new { id = item.JobId })"
+                                   class="btn btn-sm btn-outline-danger">
+                                    <i class="bi bi-trash"></i> Xóa
+                                </a>
+                            }
+                            else if ((role == "Recruiter" || role == "Employer") && userId == item.EmployerId)
+                            {
+                                <a href="@Url.Action("Edit", "JobPosts", new { id = item.JobId })"
+                                   class="btn btn-sm btn-outline-warning me-1">
+                                    <i class="bi bi-pencil"></i> Sửa
+                                </a>
+                                <a href="@Url.Action("Delete", "JobPosts", new { id = item.JobId })"
+                                   class="btn btn-sm btn-outline-danger">
+                                    <i class="bi bi-trash"></i> Xóa
+                                </a>
+                            }
+                        </td>
+                    </tr>
+                }
+            }
+            else
+            {
+                <tr>
+                    <td colspan="8" class="text-center text-muted py-3">
+                        Hiện chưa có bài đăng nào.
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" />

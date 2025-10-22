@@ -26,6 +26,8 @@ namespace RecruitmentManagementMVC.Models
         public string Location { get; set; }
         public Nullable<decimal> Salary { get; set; }
         public Nullable<System.DateTime> CreatedAt { get; set; }
+        public Nullable<System.DateTime> UpdatedAt { get; set; }
+        public Nullable<System.DateTime> ExpiryDate { get; set; }
     
         public virtual ICollection<Application> Applications { get; set; }
         public virtual User User { get; set; }

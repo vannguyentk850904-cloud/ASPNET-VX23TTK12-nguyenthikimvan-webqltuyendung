@@ -13,29 +13,69 @@ namespace RecruitmentManagementMVC.Controllers
     {
         private RecruitmentDbEntities db = new RecruitmentDbEntities();
 
-        // GET: Applications
-        public ActionResult Index()
+        // ===================== INDEX (DANH SÁCH + TÌM KIẾM + LỌC) =====================
+        public ActionResult Index(string searchString, string jobFilter, string employerFilter)
         {
-            var applications = db.Applications.Include(a => a.User).Include(a => a.JobPost);
+            var applications = db.Applications
+                .Include(a => a.User)
+                .Include(a => a.JobPost)
+                .Include(a => a.JobPost.User);
+
+            // 🔍 Tìm kiếm theo tên ứng viên hoặc tiêu đề job
+            if (!string.IsNullOrEmpty(searchString))
+            {
+                applications = applications.Where(a =>
+                    a.User.FullName.Contains(searchString) ||
+                    a.JobPost.Title.Contains(searchString));
+            }
+
+            // 🧾 Lọc theo Job
+            if (!string.IsNullOrEmpty(jobFilter))
+            {
+                applications = applications.Where(a => a.JobPost.Title == jobFilter);
+            }
+
+            // 🧾 Lọc theo Nhà tuyển dụng
+            if (!string.IsNullOrEmpty(employerFilter))
+            {
+                applications = applications.Where(a => a.JobPost.User.FullName == employerFilter);
+            }
+
+            // 📋 Đổ dữ liệu dropdown
+            ViewBag.JobList = db.JobPosts.Select(j => j.Title).Distinct().ToList();
+            ViewBag.EmployerList = db.Users
+                .Where(u => u.Role == "Recruiter" || u.Role == "Employer")
+                .Select(u => u.FullName)
+                .Distinct()
+                .ToList();
+
+            // Giữ giá trị tìm kiếm
+            ViewBag.SearchString = searchString;
+            ViewBag.JobFilter = jobFilter;
+            ViewBag.EmployerFilter = employerFilter;
+
             return View(applications.ToList());
         }
 
-        // GET: Applications/Details/5
+        // ===================== CHI TIẾT =====================
         public ActionResult Details(int? id)
         {
             if (id == null)
-            {
                 return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
-            }
-            Application application = db.Applications.Find(id);
+
+            var application = db.Applications
+                .Include(a => a.User)
+                .Include(a => a.JobPost.User) // thêm dòng này để load chủ job
+                .FirstOrDefault(a => a.ApplicationId == id);
+
             if (application == null)
-            {
                 return HttpNotFound();
-            }
+
             return View(application);
         }
 
-        // GET: Applications/Create
+
+        // ===================== TẠO MỚI =====================
         public ActionResult Create()
         {
             ViewBag.CandidateId = new SelectList(db.Users, "UserId", "FullName");
@@ -43,15 +83,13 @@ namespace RecruitmentManagementMVC.Controllers
             return View();
         }
 
-        // POST: Applications/Create
-        // To protect from overposting attacks, enable the specific properties you want to bind to, for 
-        // more details see https://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
         public ActionResult Create([Bind(Include = "ApplicationId,JobId,CandidateId,CoverLetter,AppliedAt")] Application application)
         {
             if (ModelState.IsValid)
             {
+                application.AppliedAt = application.AppliedAt ?? DateTime.Now;
                 db.Applications.Add(application);
                 db.SaveChanges();
                 return RedirectToAction("Index");
@@ -62,53 +100,53 @@ namespace RecruitmentManagementMVC.Controllers
             return View(application);
         }
 
-        // GET: Applications/Edit/5
+        // ===================== CHỈNH SỬA =====================
         public ActionResult Edit(int? id)
         {
             if (id == null)
-            {
                 return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
-            }
-            Application application = db.Applications.Find(id);
+
+            var application = db.Applications.Find(id);
             if (application == null)
-            {
                 return HttpNotFound();
-            }
+
             ViewBag.CandidateId = new SelectList(db.Users, "UserId", "FullName", application.CandidateId);
             ViewBag.JobId = new SelectList(db.JobPosts, "JobId", "Title", application.JobId);
             return View(application);
         }
 
-        // POST: Applications/Edit/5
-        // To protect from overposting attacks, enable the specific properties you want to bind to, for 
-        // more details see https://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
         public ActionResult Edit([Bind(Include = "ApplicationId,JobId,CandidateId,CoverLetter,AppliedAt")] Application application)
         {
             if (ModelState.IsValid)
             {
+                application.AppliedAt = application.AppliedAt ?? DateTime.Now;
                 db.Entry(application).State = EntityState.Modified;
                 db.SaveChanges();
                 return RedirectToAction("Index");
             }
+
             ViewBag.CandidateId = new SelectList(db.Users, "UserId", "FullName", application.CandidateId);
             ViewBag.JobId = new SelectList(db.JobPosts, "JobId", "Title", application.JobId);
             return View(application);
         }
 
+        // ===================== XÓA =====================
         // GET: Applications/Delete/5
         public ActionResult Delete(int? id)
         {
             if (id == null)
-            {
                 return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
-            }
-            Application application = db.Applications.Find(id);
+
+            var application = db.Applications
+                .Include(a => a.User)
+                .Include(a => a.JobPost)
+                .FirstOrDefault(a => a.ApplicationId == id);
+
             if (application == null)
-            {
                 return HttpNotFound();
-            }
+
             return View(application);
         }
 
@@ -117,18 +155,23 @@ namespace RecruitmentManagementMVC.Controllers
         [ValidateAntiForgeryToken]
         public ActionResult DeleteConfirmed(int id)
         {
-            Application application = db.Applications.Find(id);
-            db.Applications.Remove(application);
-            db.SaveChanges();
+            var application = db.Applications.Find(id);
+            if (application != null)
+            {
+                db.Applications.Remove(application);
+                db.SaveChanges();
+            }
+
             return RedirectToAction("Index");
         }
 
+
+        // ===================== DỌN DẸP =====================
         protected override void Dispose(bool disposing)
         {
             if (disposing)
-            {
                 db.Dispose();
-            }
+
             base.Dispose(disposing);
         }
     }
