@@ -26,6 +26,7 @@ namespace RecruitmentManagementMVC.Models
         public string PasswordHash { get; set; }
         public string Role { get; set; }
         public Nullable<System.DateTime> CreatedAt { get; set; }
+        public bool IsApproved { get; set; }
     
         public virtual ICollection<Application> Applications { get; set; }
         public virtual ICollection<JobPost> JobPosts { get; set; }
