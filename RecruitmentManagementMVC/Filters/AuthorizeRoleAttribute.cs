@@ -5,42 +5,54 @@ using System.Web.Mvc;
 namespace RecruitmentManagementMVC.Filters
 {
     /// <summary>
-    /// Attribute kiểm tra quyền người dùng dựa trên Session["Role"]
+    /// Bộ lọc phân quyền dựa trên Session["Role"]
+    /// Dùng: [AuthorizeRole("Admin", "Recruiter")]
     /// </summary>
     public class AuthorizeRoleAttribute : AuthorizeAttribute
     {
-        private readonly string[] roles;
+        private readonly string[] allowedRoles;
 
-        // Nhận danh sách role được phép, ví dụ: [AuthorizeRole("Admin", "Recruiter")]
         public AuthorizeRoleAttribute(params string[] roles)
         {
-            this.roles = roles;
+            this.allowedRoles = roles;
         }
 
-        // Hàm kiểm tra xem người dùng hiện tại có quyền hợp lệ không
         protected override bool AuthorizeCore(HttpContextBase httpContext)
         {
             var userRole = httpContext.Session["Role"] as string;
 
-            // Nếu chưa đăng nhập (chưa có session) → từ chối
+            // Chưa đăng nhập
             if (string.IsNullOrEmpty(userRole))
                 return false;
 
-            // Duyệt danh sách role được phép
-            foreach (var role in roles)
+            // Nếu là admin thì luôn được phép truy cập
+            if (userRole.Equals("Admin", StringComparison.OrdinalIgnoreCase))
+                return true;
+
+            // Nếu không phải admin → kiểm tra có trong danh sách roles không
+            foreach (var role in allowedRoles)
             {
-                if (string.Equals(role, userRole, StringComparison.OrdinalIgnoreCase))
+                if (string.Equals(userRole, role, StringComparison.OrdinalIgnoreCase))
                     return true;
             }
 
-            // Không có role hợp lệ
             return false;
         }
 
-        // Nếu không đủ quyền thì tự động chuyển hướng về trang đăng nhập
         protected override void HandleUnauthorizedRequest(AuthorizationContext filterContext)
         {
-            filterContext.Result = new RedirectResult("/Account/Login");
+            var userRole = filterContext.HttpContext.Session["Role"] as string;
+
+            if (string.IsNullOrEmpty(userRole))
+            {
+                // Nếu chưa đăng nhập → về trang đăng nhập
+                filterContext.Result = new RedirectResult("/Account/Login");
+            }
+            else
+            {
+                // Nếu đăng nhập rồi nhưng không đủ quyền → về trang chủ
+                filterContext.Result = new RedirectResult("/Home/Index");
+            }
         }
     }
 }

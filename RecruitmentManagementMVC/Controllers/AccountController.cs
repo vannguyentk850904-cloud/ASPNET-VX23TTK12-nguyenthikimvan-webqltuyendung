@@ -19,11 +19,16 @@ namespace RecruitmentManagementMVC.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Register(User user)
+        public ActionResult Register(User user, string confirmPassword)
         {
             if (ModelState.IsValid)
             {
-                // Kiểm tra email đã tồn tại
+                if (user.PasswordHash != confirmPassword)
+                {
+                    ViewBag.Error = "Mật khẩu nhập lại không khớp!";
+                    return View(user);
+                }
+
                 var existingUser = db.Users.FirstOrDefault(u => u.Email == user.Email);
                 if (existingUser != null)
                 {
@@ -31,7 +36,6 @@ namespace RecruitmentManagementMVC.Controllers
                     return View(user);
                 }
 
-                // Ngăn người dùng tự đăng ký quyền Admin
                 if (user.Role == "Admin")
                 {
                     ViewBag.Error = "Bạn không thể đăng ký tài khoản quản trị!";
@@ -40,33 +44,17 @@ namespace RecruitmentManagementMVC.Controllers
 
                 user.CreatedAt = DateTime.Now;
 
-                // Nếu không chọn vai trò thì mặc định là Ứng viên
                 if (string.IsNullOrEmpty(user.Role))
-                {
                     user.Role = "Candidate";
-                }
 
-                // Gán trạng thái duyệt
-                if (user.Role == "Employer")
-                {
-                    user.IsApproved = false; // Nhà tuyển dụng cần được admin duyệt
-                }
-                else
-                {
-                    user.IsApproved = true; // Ứng viên được kích hoạt ngay
-                }
+                user.IsApproved = (user.Role == "Employer") ? false : true;
 
                 db.Users.Add(user);
                 db.SaveChanges();
 
-                if (user.Role == "Employer")
-                {
-                    TempData["Success"] = "Đăng ký thành công! Vui lòng chờ quản trị viên duyệt tài khoản của bạn.";
-                }
-                else
-                {
-                    TempData["Success"] = "Đăng ký thành công! Vui lòng đăng nhập.";
-                }
+                TempData["Success"] = (user.Role == "Employer")
+                    ? "Đăng ký thành công! Vui lòng chờ quản trị viên duyệt."
+                    : "Đăng ký thành công! Vui lòng đăng nhập.";
 
                 return RedirectToAction("Login");
             }

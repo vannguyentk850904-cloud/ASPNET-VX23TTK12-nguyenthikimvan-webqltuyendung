@@ -25,14 +25,18 @@
                 <label>Mật khẩu</label>
                 @Html.PasswordFor(m => m.PasswordHash, new { @class = "form-control", required = "required" })
             </div>
+            <div class="form-group mb-3">
+                <label>Nhập lại mật khẩu</label>
+                <input type="password" name="confirmPassword" class="form-control" required />
+            </div>
+
 
             <div class="form-group mb-3">
                 <label>Vai trò</label>
                 @Html.DropDownListFor(model => model.Role, new SelectList(new[] {
-                    new { Text = "Nhà tuyển dụng", Value = "Recruiter" },
+                    new { Text = "Nhà tuyển dụng", Value = "Employer" }, 
                     new { Text = "Ứng viên", Value = "Candidate" }
                 }, "Value", "Text"), "Chọn vai trò", new { @class = "form-control" })
-
             </div>
 
             <div class="text-center">

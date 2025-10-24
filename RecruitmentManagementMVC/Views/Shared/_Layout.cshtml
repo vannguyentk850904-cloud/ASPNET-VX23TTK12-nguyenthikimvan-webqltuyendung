@@ -4,20 +4,89 @@
 }
 
 <!DOCTYPE html>
-<html>
+<html lang="vi">
 <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>@ViewBag.Title - JobFinder</title>
+
+    <!-- Bootstrap 5 -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+
     @Styles.Render("~/Content/css")
     @Scripts.Render("~/bundles/modernizr")
+
+    <style>
+        body {
+            background-color: #f8f9fb;
+            font-family: 'Segoe UI', sans-serif;
+        }
+
+        /* ======== NAVBAR ======== */
+        .navbar {
+            background: linear-gradient(90deg, #6a11cb, #2575fc);
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .navbar-brand {
+            font-weight: 700;
+            color: #fff !important;
+            letter-spacing: 0.5px;
+        }
+
+        .nav-link {
+            color: #f1f1f1 !important;
+            font-weight: 500;
+            transition: 0.3s;
+        }
+
+            .nav-link:hover,
+            .dropdown-item:hover {
+                color: #ffd700 !important;
+            }
+
+        .navbar-toggler {
+            border: none;
+        }
+
+        .navbar-toggler-icon {
+            filter: invert(1);
+        }
+
+        /* ======== DROPDOWN ======== */
+        .dropdown-menu {
+            border-radius: 0.6rem;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        /* ======== MAIN ======== */
+        main {
+            margin-top: 90px;
+            min-height: 80vh;
+        }
+
+        /* ======== FOOTER ======== */
+        footer {
+            background: #fff;
+            border-top: 1px solid #e0e0e0;
+            color: #6c757d;
+        }
+
+            footer strong {
+                color: #6a11cb;
+            }
+    </style>
 </head>
 
-<body style="background-color:#f8fafc; font-family:'Segoe UI',sans-serif;">
-    <!-- Navbar -->
-    <nav class="navbar navbar-expand-sm navbar-dark shadow-sm" style="background-color:#0d6efd;">
+<body>
+    <!-- ======= THANH ĐIỀU HƯỚNG ======= -->
+    <nav class="navbar navbar-expand-lg fixed-top">
         <div class="container">
             @Html.ActionLink("JobFinder", "Index", "Home", null, new { @class = "navbar-brand fw-bold text-white" })
+
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                 <span class="navbar-toggler-icon"></span>
             </button>
@@ -25,63 +94,95 @@
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav ms-auto align-items-center">
 
-                    <!-- Luôn hiển thị các trang chính -->
-                    <li class="nav-item">@Html.ActionLink("Home", "Index", "Home", null, new { @class = "nav-link text-white" })</li>
-                    <li class="nav-item">@Html.ActionLink("Jobs", "Index", "JobPosts", null, new { @class = "nav-link text-white" })</li>
+                    <!-- Trang chủ -->
+                    <li class="nav-item">
+                        @Html.ActionLink("Trang chủ", "Index", "Home", null, new { @class = "nav-link text-white" })
+                    </li>
 
-                    <!-- Nếu đã đăng nhập -->
+                    <!-- Danh sách việc (mọi người đều xem được) -->
+                    <li class="nav-item">
+                        @Html.ActionLink("Việc làm", "Index", "JobPosts", null, new { @class = "nav-link text-white" })
+                    </li>
+
                     @if (!string.IsNullOrEmpty(fullName))
                     {
                         if (role == "Admin")
+
                         {
-                            <li class="nav-item">@Html.ActionLink("Users", "Index", "Users", null, new { @class = "nav-link text-white" })</li>
-                            <li class="nav-item">@Html.ActionLink("Applications", "Index", "Applications", null, new { @class = "nav-link text-white" })</li>
+
+                            <li class="nav-item">
+                                @Html.ActionLink("Quản lý người dùng", "Index", "Users", null, new { @class = "nav-link text-white" })
+                            </li>
+                            <li class="nav-item">
+                                @Html.ActionLink("Quản lý ứng tuyển", "Index", "Applications", null, new { @class = "nav-link text-white" })
+                            </li>
+                            <li class="nav-item">
+                                @Html.ActionLink("🏠 Báo cáo", "Index", "Admin", null, new { @class = "nav-link text-white fw-bold" })
+                            </li>
+
                         }
-                        else if (role == "Recruiter")
+                        else if (role == "Recruiter" || role == "Employer")
+
                         {
-                            <li class="nav-item">@Html.ActionLink("My Jobs", "Index", "JobPosts", null, new { @class = "nav-link text-white" })</li>
-                            <li class="nav-item">@Html.ActionLink("Post Job", "Create", "JobPosts", null, new { @class = "nav-link text-white" })</li>
+                            <li class="nav-item">
+                                @Html.ActionLink("Việc đã tạo", "MyJobs", "JobPosts", null, new { @class = "nav-link text-white" })
+                            </li>
+                            <li class="nav-item">
+                                @Html.ActionLink("Đăng tuyển", "Create", "JobPosts", null, new { @class = "nav-link text-white" })
+                            </li>
+                            <li class="nav-item">
+                                @Html.ActionLink("Ứng viên ứng tuyển", "ApplicationsForMyJobs", "JobApplications", null, new { @class = "nav-link text-white" })
+                            </li>
                         }
-                        else if (role == "User")
+                        else if (role == "Candidate")
                         {
-                            <li class="nav-item">@Html.ActionLink("My Applications", "Index", "Applications", null, new { @class = "nav-link text-white" })</li>
+                            <li class="nav-item">
+                                @Html.ActionLink("Việc đã ứng tuyển", "MyApplications", "JobApplications", null, new { @class = "nav-link text-white" })
+                            </li>
                         }
 
                         <!-- Dropdown người dùng -->
                         <li class="nav-item dropdown">
-                            <a class="nav-link dropdown-toggle text-white fw-semibold" href="#" id="userMenu" role="button" data-bs-toggle="dropdown">
+                            <a class="nav-link dropdown-toggle fw-semibold text-white" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                                 👋 @fullName (@role)
                             </a>
-                            <ul class="dropdown-menu dropdown-menu-end">
-                                <li>@Html.ActionLink("Trang cá nhân", "Profile", "Users", null, new { @class = "dropdown-item" })</li>
-                                <li><hr class="dropdown-divider" /></li>
-                                <li>@Html.ActionLink("Đăng xuất", "Logout", "Account", null, new { @class = "dropdown-item text-danger" })</li>
+                            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
+                                <li><a class="dropdown-item" href="@Url.Action("Profile", "Users", new { area = "" })">Trang cá nhân</a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item text-danger" href="@Url.Action("Logout", "Account")">Đăng xuất</a></li>
                             </ul>
+
                         </li>
                     }
                     else
                     {
                         <!-- Nếu chưa đăng nhập -->
-                        <li class="nav-item">@Html.ActionLink("Đăng nhập", "Login", "Account", null, new { @class = "nav-link text-white" })</li>
-                        <li class="nav-item">@Html.ActionLink("Đăng ký", "Register", "Account", null, new { @class = "nav-link text-white" })</li>
+                        <li class="nav-item">
+                            @Html.ActionLink("Đăng nhập", "Login", "Account", null, new { @class = "nav-link text-white" })
+                        </li>
+                        <li class="nav-item">
+                            @Html.ActionLink("Đăng ký", "Register", "Account", null, new { @class = "nav-link text-white" })
+                        </li>
                     }
                 </ul>
             </div>
         </div>
     </nav>
 
-    <!-- Nội dung chính -->
-    <div class="container mt-4">
-        @RenderBody()
-    </div>
 
-    <!-- Footer -->
-    <footer class="text-center text-muted mt-5 py-3" style="background-color:#e9ecef;">
-        <p>&copy; @DateTime.Now.Year - <strong>JobFinder Platform</strong></p>
+    <!-- ======= NỘI DUNG CHÍNH ======= -->
+    <main class="container">
+        @RenderBody()
+    </main>
+
+    <!-- ======= FOOTER ======= -->
+    <footer class="text-center py-3 mt-5">
+        <p>&copy; @DateTime.Now.Year - <strong>JobFinder</strong> | Nền tảng kết nối việc làm thông minh</p>
     </footer>
 
+    <!-- ======= SCRIPT ======= -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     @Scripts.Render("~/bundles/jquery")
-    @Scripts.Render("~/bundles/bootstrap")
     @RenderSection("scripts", required: false)
 </body>
 </html>

@@ -1,0 +1,52 @@
+﻿@model IEnumerable<RecruitmentManagementMVC.Models.User>
+
+@{
+    ViewBag.Title = "Duyệt nhà tuyển dụng";
+}
+
+<div class="container mt-5">
+    <h2 class="fw-bold text-primary mb-4">Danh sách nhà tuyển dụng chờ duyệt</h2>
+
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success">@TempData["Success"]</div>
+    }
+
+    @if (!Model.Any())
+    {
+        <div class="alert alert-info">Hiện không có nhà tuyển dụng nào chờ duyệt.</div>
+    }
+    else
+    {
+        <table class="table table-bordered shadow-sm">
+            <thead class="table-light">
+                <tr>
+                    <th>Tên</th>
+                    <th>Email</th>
+                    <th>Ngày đăng ký</th>
+                    <th>Duyệt</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model)
+                {
+                    <tr>
+                        <td>@item.FullName</td>
+                        <td>@item.Email</td>
+                        <td>
+                            @(item.CreatedAt.HasValue ? item.CreatedAt.Value.ToString("dd/MM/yyyy") : "—")
+                        </td>
+
+                        <td>
+                            @using (Html.BeginForm("ApproveEmployer", "Admin", FormMethod.Post))
+                            {
+                                @Html.Hidden("id", item.UserId)
+                                <button type="submit" class="btn btn-success btn-sm">Duyệt</button>
+                            }
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+</div>

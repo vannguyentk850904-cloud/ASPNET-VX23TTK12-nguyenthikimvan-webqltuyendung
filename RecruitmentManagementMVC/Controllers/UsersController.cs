@@ -57,25 +57,59 @@ namespace RecruitmentManagementMVC.Controllers
         }
 
         // ======================= TẠO MỚI NGƯỜI DÙNG ==========================
+        // ======================= TẠO NGƯỜI DÙNG ==========================
         public ActionResult Create()
         {
+            // Danh sách Role hợp lệ hiển thị trên View
+            ViewBag.RoleList = new SelectList(new[]
+            {
+        new { Value = "Admin", Text = "Quản trị viên" },
+        new { Value = "Employer", Text = "Nhà tuyển dụng" },
+        new { Value = "Candidate", Text = "Ứng viên" }
+    }, "Value", "Text");
+
             return View();
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Create([Bind(Include = "FullName,Email,PasswordHash,Role")] User user)
+        public ActionResult Create(User user)
         {
-            if (ModelState.IsValid)
+            // Kiểm tra giá trị role hợp lệ với database
+            var validRoles = new[] { "Admin", "Employer", "Candidate" };
+            if (!validRoles.Contains(user.Role))
             {
-                user.CreatedAt = DateTime.Now;
-                db.Users.Add(user);
-                db.SaveChanges();
-                return RedirectToAction("Index");
+                ModelState.AddModelError("Role", "Vai trò không hợp lệ!");
             }
 
-            return View(user);
+            // Email không được trùng
+            if (db.Users.Any(u => u.Email == user.Email))
+            {
+                ModelState.AddModelError("Email", "Email đã tồn tại trong hệ thống!");
+            }
+
+            // Mật khẩu không được để trống
+            if (string.IsNullOrWhiteSpace(user.PasswordHash))
+            {
+                ModelState.AddModelError("PasswordHash", "Mật khẩu không được để trống!");
+            }
+
+            if (!ModelState.IsValid)
+            {
+                ViewBag.RoleList = new SelectList(validRoles);
+                return View(user);
+            }
+
+            user.CreatedAt = DateTime.Now;
+            user.IsApproved = (user.Role == "Employer") ? false : true;
+
+            db.Users.Add(user);
+            db.SaveChanges();
+
+            TempData["Success"] = "Tạo tài khoản thành công!";
+            return RedirectToAction("Index");
         }
+
 
         // ======================= CHỈNH SỬA NGƯỜI DÙNG ==========================
         // GET: Users/Edit/5

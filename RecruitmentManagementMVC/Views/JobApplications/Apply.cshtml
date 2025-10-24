@@ -1,0 +1,49 @@
+﻿@{
+    ViewBag.Title = "Nộp đơn ứng tuyển";
+}
+
+<h2 class="text-center text-primary mt-3">
+    Nộp đơn ứng tuyển cho: <b>@ViewBag.JobTitle</b>
+</h2>
+
+@using (Html.BeginForm("Apply", "JobApplications", FormMethod.Post, new { enctype = "multipart/form-data" }))
+{
+    @Html.AntiForgeryToken()
+
+    <!-- Ẩn jobId để gửi đúng về controller -->
+    <input type="hidden" name="jobId" value="@ViewBag.JobId" />
+
+    <div class="form-group mt-4">
+        <label for="coverLetter">Thư giới thiệu / Lý do ứng tuyển</label>
+        <textarea name="coverLetter" class="form-control" rows="5"
+                  placeholder="Giới thiệu ngắn gọn về bản thân và lý do bạn phù hợp với vị trí này..."></textarea>
+    </div>
+
+    <div class="form-group mt-3">
+        <label for="CvFile">Tải lên CV của bạn (PDF, DOC, DOCX)</label>
+        <input type="file" name="CvFile" id="CvFile"
+               class="form-control"
+               accept=".pdf,.doc,.docx"
+               required />
+    </div>
+
+    <div class="mt-4">
+        <button type="submit" class="btn btn-success me-2">
+            <i class="bi bi-send"></i> Gửi đơn
+        </button>
+        <a href="@Url.Action("Details", "JobPosts", new { id = ViewBag.JobId })"
+           class="btn btn-secondary">
+            Quay lại
+        </a>
+    </div>
+}
+
+<!-- Hiển thị thông báo nếu có -->
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger mt-3">@TempData["Error"]</div>
+}
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success mt-3">@TempData["Success"]</div>
+}

@@ -1,5 +1,19 @@
 ﻿@model IEnumerable<RecruitmentManagementMVC.Models.JobPost>
 
+@{
+    ViewBag.Title = "Trang chủ - JobFinder";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+
+    int currentPage = ViewBag.CurrentPage;
+    int pageSize = ViewBag.PageSize;
+    int totalItems = ViewBag.TotalItems;
+    int totalPages = (int)Math.Ceiling((double)totalItems / pageSize);
+    string searchString = ViewBag.SearchString;
+    string location = ViewBag.Location;
+}
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+
 <style>
     body {
         background: #f8f9fb;
@@ -8,8 +22,7 @@
 
     .page-header {
         text-align: center;
-        margin-bottom: 50px;
-        position: relative;
+        margin: 60px 0 40px;
     }
 
         .page-header h1 {
@@ -17,45 +30,35 @@
             background: linear-gradient(90deg, #6a11cb, #2575fc);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
+            font-size: 2.5rem;
         }
 
         .page-header p {
             color: #6c757d;
             font-size: 1.1rem;
+            margin-top: 8px;
         }
+
+    .search-box {
+        max-width: 900px;
+        margin: 0 auto 40px;
+        background: #fff;
+        border-radius: 16px;
+        padding: 20px;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+    }
 
     .job-card {
         border: none;
-        border-radius: 15px;
-        transition: all 0.3s ease;
-        overflow: hidden;
+        border-radius: 16px;
         background: #fff;
-        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.06);
+        box-shadow: 0 4px 10px rgba(0,0,0,0.06);
+        transition: all 0.3s ease;
     }
 
         .job-card:hover {
             transform: translateY(-8px);
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
-        }
-
-        .job-card .card-body {
-            padding: 25px;
-        }
-
-        .job-card h5 {
-            font-weight: 700;
-            color: #6a11cb;
-            margin-bottom: 12px;
-        }
-
-    .job-info {
-        color: #555;
-        font-size: 0.95rem;
-    }
-
-        .job-info i {
-            color: #2575fc;
-            margin-right: 6px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.15);
         }
 
     .btn-view {
@@ -63,7 +66,7 @@
         border: none;
         border-radius: 8px;
         font-weight: 500;
-        transition: 0.3s;
+        transition: all 0.3s;
         color: #fff;
         padding: 8px 16px;
     }
@@ -73,9 +76,9 @@
             background: linear-gradient(45deg, #5b0faf, #1f5edb);
         }
 
-    .salary {
-        color: #28a745;
-        font-weight: 600;
+    .pagination .page-item.active .page-link {
+        background-color: #2575fc;
+        border-color: #2575fc;
     }
 </style>
 
@@ -84,30 +87,78 @@
     <p>Tìm kiếm cơ hội nghề nghiệp phù hợp với bạn</p>
 </div>
 
-<div class="container">
+<div class="search-box">
+    <form method="get" action="@Url.Action("Index", "Home")" class="row g-3">
+        <div class="col-md-5">
+            <input type="text" name="searchString" value="@searchString" class="form-control"
+                   placeholder="🔍 Nhập tên công việc..." />
+        </div>
+        <div class="col-md-5">
+            <input type="text" name="location" value="@location" class="form-control"
+                   placeholder="📍 Khu vực (VD: Hà Nội, TP.HCM...)" />
+        </div>
+        <div class="col-md-2 text-center">
+            <button type="submit" class="btn btn-primary w-100">
+                <i class="fas fa-search"></i> Tìm kiếm
+            </button>
+        </div>
+    </form>
+</div>
+
+<div class="container pb-5">
     <div class="row">
-        @foreach (var job in Model)
+        @if (Model != null && Model.Any())
         {
-            <div class="col-md-4 mb-4 d-flex">
-                <div class="card job-card w-100">
-                    <div class="card-body d-flex flex-column justify-content-between">
-                        <div>
-                            <h5>@job.Title</h5>
-                            <p class="text-muted">
-                                @((job.Description ?? "Không có mô tả").Substring(0, Math.Min((job.Description ?? "").Length, 80)))...
-                            </p>
-                            <p class="job-info"><i class="fas fa-map-marker-alt"></i><strong>Địa điểm:</strong> @job.Location</p>
-                            <p class="job-info"><i class="fas fa-money-bill-wave"></i><strong>Lương:</strong> <span class="salary">@string.Format("{0:N0}", Convert.ToDecimal(job.Salary)) VNĐ</span></p>
-                        </div>
-                        <div class="mt-3 text-end">
-                            <a href="@Url.Action("Details", "JobPosts", new { id = job.JobId })" class="btn btn-view">Xem chi tiết</a>
+            foreach (var job in Model)
+            {
+                var desc = string.IsNullOrWhiteSpace(job.Description) ? "Không có mô tả." : job.Description;
+                var shortDesc = desc.Length > 80 ? desc.Substring(0, 80) + "..." : desc;
+
+                <div class="col-md-4 mb-4 d-flex">
+                    <div class="card job-card w-100">
+                        <div class="card-body d-flex flex-column justify-content-between">
+                            <div>
+                                <h5>@job.Title</h5>
+                                <p class="text-muted">@shortDesc</p>
+                                <p><i class="fas fa-map-marker-alt text-primary"></i> <strong>@job.Location</strong></p>
+                                <p>
+                                    <i class="fas fa-money-bill text-success"></i>
+                                    @(job.Salary != null ? string.Format("{0:N0} VNĐ", job.Salary) : "Thỏa thuận")
+                                </p>
+                            </div>
+                            <div class="mt-3 text-end">
+                                <a href="@Url.Action("Details", "JobPosts", new { id = job.JobId })"
+                                   class="btn btn-view"><i class="fas fa-eye"></i> Xem chi tiết</a>
+                            </div>
                         </div>
                     </div>
                 </div>
+            }
+        }
+        else
+        {
+            <div class="col-12 text-center text-muted">
+                <p>Hiện chưa có công việc nào phù hợp.</p>
             </div>
         }
     </div>
-</div>
 
-<!-- Thêm link Font Awesome nếu chưa có -->
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <!-- PHÂN TRANG -->
+    @if (totalPages > 1)
+    {
+        <nav aria-label="Page navigation">
+            <ul class="pagination justify-content-center">
+                @for (int i = 1; i <= totalPages; i++)
+                {
+                    var liClass = (i == currentPage) ? "page-item active" : "page-item";
+                    <li class="@liClass">
+                        <a class="page-link"
+                           href="@Url.Action("Index", "Home", new { page = i, searchString = searchString, location = location })">
+                            @i
+                        </a>
+                    </li>
+                }
+            </ul>
+        </nav>
+    }
+</div>

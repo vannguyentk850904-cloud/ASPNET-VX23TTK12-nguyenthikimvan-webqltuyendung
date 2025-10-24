@@ -1,0 +1,79 @@
+﻿@model IEnumerable<RecruitmentManagementMVC.Models.Application>
+
+@{
+    ViewBag.Title = "Danh sách ứng viên nộp đơn";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<h2 class="text-center mb-4">📋 Danh sách ứng viên nộp đơn vào việc của bạn</h2>
+
+@if (!Model.Any())
+{
+    <div class="alert alert-info text-center">
+        Chưa có ứng viên nào nộp đơn cho các công việc của bạn.
+    </div>
+}
+else
+{
+    <table class="table table-bordered table-hover">
+        <thead class="thead-dark text-center">
+            <tr>
+                <th>Ứng viên</th>
+                <th>Email</th>
+                <th>Công việc</th>
+                <th>Thư giới thiệu</th>
+                <th>CV</th>
+                <th>Ngày nộp</th>
+                <th>Trạng thái</th>
+                <th>Hành động</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var app in Model)
+            {
+                <tr>
+                    <td>@app.User.FullName</td>
+                    <td>@app.User.Email</td>
+                    <td>@app.JobPost.Title</td>
+                    <td>@app.CoverLetter</td>
+                    <td>
+                        @if (!string.IsNullOrEmpty(app.CvFilePath))
+                        {
+                            <a href="@Url.Content(app.CvFilePath)" target="_blank" class="btn btn-sm btn-outline-primary">Xem CV</a>
+                        }
+                        else
+                        {
+                            <span class="text-muted">Không có</span>
+                        }
+                    </td>
+                    <td>@(app.AppliedAt?.ToString("dd/MM/yyyy HH:mm") ?? "Chưa có")</td>
+
+                    <td>
+                        @if (app.Status == "Pending")
+                        {
+                            <span class="badge bg-warning text-dark">Đang chờ</span>
+                        }
+                        else if (app.Status == "Approved")
+                        {
+                            <span class="badge bg-success">Đã duyệt</span>
+                        }
+                        else if (app.Status == "Rejected")
+                        {
+                            <span class="badge bg-danger">Từ chối</span>
+                        }
+                    </td>
+                    <td class="text-center">
+                        @using (Html.BeginForm("Approve", "JobApplications", new { id = app.ApplicationId }, FormMethod.Post))
+                        {
+                            <button type="submit" class="btn btn-success btn-sm" @(app.Status == "Approved" ? "disabled" : "")>Duyệt</button>
+                        }
+                        @using (Html.BeginForm("Reject", "JobApplications", new { id = app.ApplicationId }, FormMethod.Post))
+                        {
+                            <button type="submit" class="btn btn-danger btn-sm" @(app.Status == "Rejected" ? "disabled" : "")>Từ chối</button>
+                        }
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}

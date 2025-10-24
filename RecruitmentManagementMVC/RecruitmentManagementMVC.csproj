@@ -161,6 +161,7 @@
     <Compile Include="Controllers\ApplicantController.cs" />
     <Compile Include="Controllers\ApplicationsController.cs" />
     <Compile Include="Controllers\HomeController.cs" />
+    <Compile Include="Controllers\JobApplicationsController.cs" />
     <Compile Include="Controllers\JobPostsController.cs" />
     <Compile Include="Controllers\RecruiterController.cs" />
     <Compile Include="Controllers\UsersController.cs" />
@@ -282,6 +283,11 @@
     <Content Include="Views\Admin\Index.cshtml" />
     <Content Include="Views\Recruiter\Index.cshtml" />
     <Content Include="Views\Applicant\Index.cshtml" />
+    <Content Include="Views\JobApplications\Apply.cshtml" />
+    <Content Include="Views\JobApplications\MyApplications.cshtml" />
+    <Content Include="Views\JobApplications\ApplicationsForMyJobs.cshtml" />
+    <Content Include="Views\Users\Profile.cshtml" />
+    <Content Include="Views\Admin\PendingEmployers.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />

@@ -1,0 +1,79 @@
+﻿@model IEnumerable<RecruitmentManagementMVC.Models.Application>
+
+@{
+    ViewBag.Title = "Đơn ứng tuyển của tôi";
+}
+
+<h2 class="mb-4 text-primary">
+    <i class="fas fa-briefcase"></i> Đơn ứng tuyển của tôi
+</h2>
+
+@if (!Model.Any())
+{
+    <div class="alert alert-info">
+        <i class="fas fa-info-circle"></i> Bạn chưa nộp đơn ứng tuyển nào.
+    </div>
+}
+else
+{
+    <table class="table table-bordered table-hover align-middle">
+        <thead class="table-light">
+            <tr>
+                <th><i class="fas fa-file-alt"></i> Công việc</th>
+                <th><i class="fas fa-building"></i> Nhà tuyển dụng</th>
+                <th><i class="fas fa-calendar-alt"></i> Ngày nộp</th>
+                <th><i class="fas fa-tasks"></i> Trạng thái</th>
+                <th><i class="fas fa-file"></i> CV</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var app in Model)
+            {
+                <tr>
+                    <td>@app.JobPost.Title</td>
+                    <td>@app.JobPost.User.FullName</td>
+                    <td>@(app.AppliedAt != null ? ((DateTime)app.AppliedAt).ToString("dd/MM/yyyy HH:mm") : "—")</td>
+
+                    <!-- ✅ Hiển thị trạng thái với icon -->
+                    <td>
+                        @if (app.Status == "Pending")
+                        {
+                            <span class="badge bg-warning text-dark px-3 py-2">
+                                <i class="fas fa-hourglass-half"></i> Đang chờ duyệt
+                            </span>
+                        }
+                        else if (app.Status == "Approved")
+                        {
+                            <span class="badge bg-success px-3 py-2">
+                                <i class="fas fa-check-circle"></i> Đã được duyệt
+                            </span>
+                        }
+                        else if (app.Status == "Rejected")
+                        {
+                            <span class="badge bg-danger px-3 py-2">
+                                <i class="fas fa-times-circle"></i> Đã bị từ chối
+                            </span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-secondary">Không xác định</span>
+                        }
+                    </td>
+
+                    <td>
+                        @if (!string.IsNullOrEmpty(app.CvFilePath))
+                        {
+                            <a href="@Url.Content(app.CvFilePath)" target="_blank" class="btn btn-sm btn-outline-primary">
+                                <i class="fas fa-eye"></i> Xem CV
+                            </a>
+                        }
+                        else
+                        {
+                            <span class="text-muted">Chưa có CV</span>
+                        }
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
