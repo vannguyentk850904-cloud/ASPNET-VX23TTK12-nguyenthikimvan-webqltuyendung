@@ -35,7 +35,7 @@
 ### 1️⃣ Clone dự án  
 
 ```bash
-git clone https://github.com/your-repo/RecruitmentManagementMVC.git
+git clone https://github.com/vannguyentk850904-cloud/ASPNET-VX23TTK12-nguyenthikimvan-webqltuyendung.git
 ```
 
 Hoặc tải file ZIP và giải nén.  
