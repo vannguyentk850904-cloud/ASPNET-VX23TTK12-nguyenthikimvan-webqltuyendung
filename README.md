@@ -1,19 +1,18 @@
-﻿# ASPNET-VX23TTK12-nguyenthikimvan-webqltuyendung
+﻿# 🧩 ASPNET-VX23TTK12-NguyenThiKimVan-WebQLTuyenDung  
+### Recruitment Management MVC  
 
-# Recruitment Management MVC
+Ứng dụng Web **quản lý tuyển dụng** được xây dựng trên **ASP.NET MVC Framework**, cho phép:  
 
-Ứng dụng Web quản lý tuyển dụng được xây dựng trên ASP.NET MVC Framework:
-
-- Nhà tuyển dụng đăng tin tuyển dụng
-- Ứng viên đăng ký tài khoản và ứng tuyển
-- Quản trị viên duyệt tài khoản tuyển dụng
+- 🏢 Nhà tuyển dụng đăng tin tuyển dụng  
+- 👨‍🎓 Ứng viên đăng ký tài khoản và ứng tuyển  
+- 👑 Quản trị viên duyệt tài khoản nhà tuyển dụng  
 
 ---
 
-## 🚀 Công nghệ sử dụng
+## 🚀 Công nghệ sử dụng  
 
 | Công nghệ | Phiên bản |
-|---------|-----------|
+|-----------|-----------|
 | ASP.NET MVC | 5.2.9 |
 | .NET Framework | 4.8 |
 | Entity Framework | 6.5.1 |
@@ -22,147 +21,155 @@
 
 ---
 
-## 📌 Yêu cầu chạy dự án
+## 📌 Yêu cầu chạy dự án  
 
-- Visual Studio 2022
-- .NET Framework Developer Pack 4.8
-- SQL Server Express (hoặc LocalDB với chỉnh sửa connection string)
-- Quyền tạo database trong SQL Server
+- Visual Studio 2022  
+- .NET Framework Developer Pack 4.8  
+- SQL Server Express (hoặc LocalDB nếu tự tạo CSDL)  
+- Quyền tạo database trong SQL Server  
 
 ---
 
-## 📥 Cài đặt & Khởi chạy
+## 📥 Cài đặt & Khởi chạy  
 
-### 1️⃣ Clone dự án
+### 1️⃣ Clone dự án  
 
-```
+```bash
 git clone https://github.com/your-repo/RecruitmentManagementMVC.git
 ```
 
-Hoặc tải file ZIP và giải nén.
-
-Mở file `RecruitmentManagementMVC.sln` bằng Visual Studio 2022.
+Hoặc tải file ZIP và giải nén.  
+Mở file `RecruitmentManagementMVC.sln` bằng **Visual Studio 2022**.
 
 ---
 
-### 2️⃣ Khôi phục NuGet Packages
+### 2️⃣ Khôi phục NuGet Packages  
 
-Trong Visual Studio:
-
+Trong Visual Studio:  
 ```
 Tools → NuGet Package Manager → Restore NuGet Packages
 ```
 
-Xong sẽ không còn lỗi thiếu thư viện.
+---
+
+### 3️⃣ Kết nối cơ sở dữ liệu  
+
+Tùy nhu cầu, bạn có thể **chạy trực tiếp với CSDL online** hoặc **tạo CSDL riêng trên máy**.
 
 ---
 
-### 3️⃣ Tạo cơ sở dữ liệu
+#### 🔹 Trường hợp 1: Dùng sẵn CSDL Online (Somee.com ✅)  
 
-Mở SQL Server Management Studio (SSMS):
-
-- Chạy file **`RecruitmentDb.sql`**
-- Đảm bảo database tên đúng: `RecruitmentDb`
-
----
-
-### 4️⃣ Kiểm tra Connection String
-
-Trong `Web.config`:
+Nếu bạn chỉ muốn chạy web **ngay lập tức**, không cần tạo DB, hãy giữ nguyên cấu hình sau trong file `Web.config`:
 
 ```xml
 <connectionStrings>
   <add name="RecruitmentDbEntities"
-       connectionString="metadata=res://*/Models.RecruitmentModel.csdl|res://*/Models.RecruitmentModel.ssdl|res://*/Models.RecruitmentModel.msl;provider=System.Data.SqlClient;provider connection string=&quot;data source=ANONYMOUS\SQLEXPRESS01;initial catalog=RecruitmentDb;integrated security=True;encrypt=False;MultipleActiveResultSets=True;App=EntityFramework&quot;" 
+       connectionString="metadata=res://*/Models.RecruitmentModel.csdl|res://*/Models.RecruitmentModel.ssdl|res://*/Models.RecruitmentModel.msl;
+       provider=System.Data.SqlClient;
+       provider connection string=&quot;data source=SQL5108.site4now.net;
+       initial catalog=db_aadf65_recruitment2025;
+       user id=db_aadf65_recruitment2025_admin;
+       password=yourpassword;
+       MultipleActiveResultSets=True;
+       App=EntityFramework&quot;" 
        providerName="System.Data.EntityClient" />
 </connectionStrings>
 ```
 
-Nếu SQL server khác tên, đổi phần:
-
-```
-data source= TÊN_MÁY\TÊN_SQL_INSTANCE
-```
-
-VD:  
-`data source=DESKTOP-ABC123\SQLEXPRESS`
+> 👉 Kết nối này dùng **CSDL online** đang hoạt động trên Somee.com.  
+> Bạn chỉ cần tải source về là chạy được ngay.
 
 ---
 
+#### 🔹 Trường hợp 2: Tạo cơ sở dữ liệu riêng (Local SQL Server)  
 
-### 5️⃣ Chạy web
+Nếu bạn muốn chạy độc lập trên máy:  
 
-Chọn dự án:
+1. Mở **SQL Server Management Studio (SSMS)**  
+2. Chạy file **`RecruitmentDb.sql`** có sẵn trong dự án  
+   → Tạo database tên: `RecruitmentDb`  
+3. Cập nhật `connectionString` trong **`Web.config`**:  
 
+```xml
+<connectionStrings>
+  <add name="RecruitmentDbEntities"
+       connectionString="metadata=res://*/Models.RecruitmentModel.csdl|res://*/Models.RecruitmentModel.ssdl|res://*/Models.RecruitmentModel.msl;
+       provider=System.Data.SqlClient;
+       provider connection string=&quot;data source=DESKTOP-ABC123\SQLEXPRESS;
+       initial catalog=RecruitmentDb;
+       integrated security=True;
+       encrypt=False;
+       MultipleActiveResultSets=True;
+       App=EntityFramework&quot;" 
+       providerName="System.Data.EntityClient" />
+</connectionStrings>
 ```
-RecruitmentManagementMVC → Set as Startup Project
-```
 
-Chạy:
+> ⚙️ Thay `DESKTOP-ABC123\SQLEXPRESS` bằng tên SQL Server thật của bạn.  
+> (Kiểm tra bằng SSMS → Connect → Server Name.)
 
-```
-F5 hoặc Ctrl + F5
-```
+---
 
-Ứng dụng chạy tại:
+### 4️⃣ Chạy ứng dụng  
 
+- Trong **Solution Explorer**, click phải vào dự án `RecruitmentManagementMVC`  
+  → Chọn **Set as Startup Project**  
+- Nhấn **F5** hoặc **Ctrl + F5** để chạy web  
+
+Mặc định chạy tại:  
 ```
 http://localhost:<port>/
 ```
 
 ---
 
-## 🔑 Tài khoản đăng nhập mẫu
+## 🔑 Tài khoản đăng nhập mẫu  
 
-### 👑 Admin
+### 👑 Quản trị viên (Admin)  
 
 | Email | Mật khẩu |
 |------|:------:|
 | admin@gmail.com | admin123 |
 
----
-
-### 🏢 Nhà tuyển dụng
+### 🏢 Nhà tuyển dụng (Employer)  
 
 | Email | Mật khẩu |
 |------|:------:|
-| camxucgoc12@gmail.com | 123456 |
-| abc@gmail.com | 123456 |
+| ungvien1@gmail.com | 123456 |
+| ungvien2@gmail.com | 123456 |
 
----
-
-### 👨‍🎓 Ứng viên
+### 👨‍🎓 Ứng viên (Candidate)  
 
 | Email | Mật khẩu |
 |------|:------:|
-| vana@gmail.com | 123456 |
-| camxucgoc0@gmail.com | 123456 |
+| nhatuyendung1@gmail.com | 123456 |
+| nhatuyendung2@gmail.com | 123456 |
 
 ---
 
-## ✅ Chức năng chính
+## ✅ Chức năng chính  
 
 | Vai trò | Quyền hạn |
 |--------|-----------|
-| Admin | Duyệt tài khoản, quản lý toàn bộ người dùng và dữ liệu |
-| Employer | Đăng bài tuyển dụng khi được duyệt |
-| Candidate | Nộp đơn ứng tuyển vào các công việc |
+| **Admin** | Duyệt tài khoản, quản lý người dùng và dữ liệu |
+| **Employer** | Đăng bài tuyển dụng khi được duyệt |
+| **Candidate** | Nộp đơn ứng tuyển các công việc |
 
 ---
 
+## 🐞 Lỗi thường gặp & Cách xử lý  
 
-## 🐞 Lỗi thường gặp & cách xử lý
-
-| Lỗi | Cách sửa |
-|-----|----------|
-| Không kết nối DB | Kiểm tra lại connection string |
-| Lỗi CHECK constraint Role | Role phải thuộc: Admin, Employer, Candidate |
+| Lỗi | Cách khắc phục |
+|-----|----------------|
+| Không kết nối được DB | Kiểm tra lại `connectionString` |
+| Lỗi CHECK constraint Role | Role hợp lệ: Admin, Employer, Candidate |
 | HTTP 500 khi đăng ký | Chưa chạy đúng file SQL |
-| Login sai mật khẩu ngay cả khi đúng | DB chưa bật `IsApproved` nếu là Employer |
+| Đăng nhập sai dù đúng mật khẩu | Employer chưa được duyệt (`IsApproved = false`) |
 
 ---
 
-## 📚 Cấu trúc thư mục
+## 📂 Cấu trúc thư mục dự án  
 
 ```
 RecruitmentManagementMVC/
@@ -176,14 +183,21 @@ RecruitmentManagementMVC/
 
 ---
 
-## ✅ Chức năng chính
+## 🌐 Website demo  
 
-- Đăng ký, đăng nhập, đăng xuất
-- Admin quản lý users
-- Nhà tuyển dụng đăng tin
-- Ứng viên ứng tuyển
-- Duyệt tài khoản Employer
+Nếu bạn không thể chạy dự án cục bộ, có thể truy cập bản online tại:  
+
+👉 **http://recruitment2025.somee.com/**  
 
 ---
 
-Chúc bạn chạy web ngon lành. Nếu gặp khó khăn cứ báo cho mình!
+## 🧠 Ghi chú  
+
+- Một số trình duyệt có thể hiển thị cảnh báo “Không bảo mật” do **Somee.com bản miễn phí không hỗ trợ HTTPS**.  
+- Đây chỉ là **cảnh báo giao thức**, không ảnh hưởng chức năng website.  
+
+---
+
+🎯 **Chúc bạn chạy web thành công và bảo vệ đồ án thuận lợi! 
+Nếu có vấn đề gì liên hệ mail: vanntk040985@sv-onuni.edu.vn hoặc vannguyentk850904@gmail.com
+**

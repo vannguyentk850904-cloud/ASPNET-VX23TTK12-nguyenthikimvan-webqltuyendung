@@ -88,10 +88,10 @@ GO
 INSERT INTO Users (FullName, Email, PasswordHash, Role, IsApproved)
 VALUES 
 (N'Quản trị viên', 'admin@gmail.com', 'admin123', 'Admin', 1),
-(N'Nhà tuyển dụng 1', 'camxucgoc12@gmail.com', '123456', 'Employer', 1),
-(N'Nhà tuyển dụng 2', 'abc@gmail.com', '123456', 'Employer', 1),
-(N'Ứng viên 1', 'vana@gmail.com', '123456', 'Candidate', 1),
-(N'Ứng viên 2', 'camxucgoc0@gmail.com', '123456', 'Candidate', 1);
+(N'Nhà tuyển dụng 1', 'nhatuyendung1@gmail.com', '123456', 'Employer', 1),
+(N'Nhà tuyển dụng 2', 'nhatuyendung2@gmail.com', '123456', 'Employer', 1),
+(N'Ứng viên 1', 'ungvien1@gmail.com', '123456', 'Candidate', 1),
+(N'Ứng viên 2', 'ungvien2@gmail.com', '123456', 'Candidate', 1);
 GO
 
 ----------------------------------------------------
@@ -103,7 +103,10 @@ VALUES
 (2, N'Chuyên viên Marketing', N'Lên kế hoạch và thực thi chiến dịch marketing.', N'Hồ Chí Minh', 12000000, DATEADD(day, 45, GETDATE())),
 (3, N'Nhân viên Kinh Doanh', N'Tìm kiếm và chăm sóc khách hàng.', N'Hà Nội', 10000000, DATEADD(day, 20, GETDATE())),
 (3, N'Tester phần mềm', N'Kiểm thử hệ thống web, mobile.', N'Đà Nẵng', 14000000, DATEADD(day, 25, GETDATE())),
-(2, N'UI/UX Designer', N'Thiết kế giao diện website và ứng dụng.', N'Hồ Chí Minh', 16000000, DATEADD(day, 30, GETDATE()));
+(2, N'UI/UX Designer', N'Thiết kế giao diện website và ứng dụng.', N'Hồ Chí Minh', 16000000, DATEADD(day, 30, GETDATE())),
+(3, N'Lập trình viên Frontend', N'ReactJS, HTML/CSS, UI performance.', N'Cần Thơ', 15000000, DATEADD(day, 28, GETDATE())),
+(3, N'Kinh doanh phần mềm', N'Mở rộng thị trường sản phẩm công nghệ.', N'Hà Nội', 10000000, DATEADD(day, 20, GETDATE()));
+
 GO
 
 ----------------------------------------------------
